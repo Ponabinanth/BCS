@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy Smart Contract - SecureChain</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0f1f;
+            color: #fff;
+            text-align: center;
+            padding: 50px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #131c31;
+            padding: 40px;
+            border-radius: 15px;
+            border: 1px solid #00ffe0;
+            box-shadow: 0 0 20px rgba(0, 255, 224, 0.2);
+        }
+
+        h1 {
+            color: #00ffe0;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #00ffe0;
+            color: #000;
+            padding: 15px 30px;
+            border: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #00ccb3;
+            transform: scale(1.05);
+        }
+
+        #status {
+            margin-top: 20px;
+            font-family: monospace;
+            color: #ccc;
+            white-space: pre-wrap;
+            text-align: left;
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Deploy SecureChain NFT Contract</h1>
+        <p>Connect your wallet and deploy the smart contract to the blockchain.</p>
+
+        <button id="connectBtn">Connect Wallet</button>
+        <button id="deployBtn" class="hidden" disabled>Deploy Contract</button>
+
+        <div id="status">Waiting for connection...</div>
+    </div>
+
+    <script>
+        let signer;
+        let factory;
+
+        const connectBtn = document.getElementById('connectBtn');
+        const deployBtn = document.getElementById('deployBtn');
+        const statusDiv = document.getElementById('status');
+
+        function log(msg) {
+            statusDiv.textContent += "\n" + msg;
+            console.log(msg);
+        }
+
+        connectBtn.onclick = async () => {
+            if (typeof window.ethereum === 'undefined') {
+                log("MetaMask not found!");
+                return;
+            }
+            try {
+                const provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                const address = await signer.getAddress();
+                log("Connected: " + address);
+                connectBtn.classList.add('hidden');
+                deployBtn.classList.remove('hidden');
+
+                // Load Contract Data
+                const response = await fetch('/contracts/SecureChainNFT.json');
+                const data = await response.json();
+
+                if (!data.abi || !data.bytecode) {
+                    log("Error: Contract ABI/Bytecode not found in JSON.");
+                    return;
+                }
+
+                factory = new ethers.ContractFactory(data.abi, data.bytecode, signer);
+                deployBtn.disabled = false;
+                log("Ready to deploy.");
+            } catch (e) {
+                log("Connection failed: " + e.message);
+            }
+        };
+
+        deployBtn.onclick = async () => {
+            try {
+                log("Deploying... Please confirm in MetaMask.");
+                const contract = await factory.deploy();
+                log("Transaction sent! Waiting for confirmation...");
+
+                await contract.waitForDeployment();
+                const address = await contract.getAddress();
+
+                log("SUCCESS! Contract deployed at: " + address);
+                log("PLEASE COPY THIS ADDRESS and update main.js 'CONTRACT_ADDRESS' or use it in the console.");
+
+                // Optional: Save to backend? (No easy way without an endpoint, simplifying)
+                localStorage.setItem('securechain_contract', address);
+            } catch (e) {
+                log("Deployment failed: " + e.message);
+            }
+        };
+    </script>
+</body>
+
+</html>

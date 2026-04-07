@@ -1,0 +1,44 @@
+{
+  "testuser@example.com": {
+    "password": "scrypt:32768:8:1$U5ercI3aBl38GB2N$5f813a5a9b2096418e1f84bba9878c3fdc43170d5966b513724661a9b6b10adcbe7b99a0a7e041d36619b8cf7bd3c7c1b46c4403142063d0740084a801401074",
+    "verified": true
+  },
+  "testform@example.com": {
+    "password": "scrypt:32768:8:1$xunrAameZNkEDvqJ$3d5e09d8d322ce6afd917a9f3379e835f024deeec39f5884f35a7c3a52e881d8c1605d4b6bb40aedec8d0fecb68479eab1705816a17bc0e277a6ae0d35d5bb28",
+    "verified": false,
+    "code": "019862"
+  },
+  "testlogin@example.com": {
+    "password": "scrypt:32768:8:1$OR1oXb2YTaHGY27R$e0d876c8dc3c412c20cf7dbac87f31cecfe69fdf3771e563d5e4dbd5f8fa037649e301269afe6e2b26e03bebaac9caec230cdc7a3d08ce547d1fa686244c9ee9",
+    "verified": true
+  },
+  "kabileshk702@gmail.com": {
+    "password": "scrypt:32768:8:1$t4BBRRn7cUOHKFcI$478ba04313228dceec5b61a312fed0d527b14c174ddb6a0d21d3da29bde3be9a8dbafc77affe3b061805e619f58006a76b43243af0cc3c89cbf2df6c4b5e39f6",
+    "verified": false,
+    "code": "582526"
+  },
+  "test@example.com": {
+    "password": "scrypt:32768:8:1$6QnWbBBCvTibsUZR$b84a1ce9e930baf7265df13dd24d6ea8adcdb1ac7056bd8ddc69713c8591e40cb3f0f65825e7cf81ddd1f837f5bc2493f0c1396098812de8c7aa10b53ce6f714",
+    "verified": true
+  },
+  "newtest@example.com": {
+    "username": "newtest",
+    "password": "scrypt:32768:8:1$hnSHFlOh9XAAAT8l$ca657e9ed0dae01d0af00dfca0f01245db87ea8f9865919986c55d3c637daaf533449b9fc45906aae70c7cfbdb679989aaa260912c8059b75143235e4435ba9b",
+    "verified": true
+  },
+  "test2@example.com": {
+    "username": "",
+    "password": "pbkdf2:sha256:600000$DuOgxbJ2YcBmI79J$1a0c8550ceb2d7fe701ed40e856407270de953b29d2384084441b7232101238d",
+    "verified": false
+  },
+  "newuser@example.com": {
+    "username": "newuser",
+    "password": "pbkdf2:sha256:600000$4q6Dy2cmmofp5zOW$6e2562e879cc637951c61722a981fc5b54ca0f65212f6946799d7120a7d889de",
+    "verified": false
+  },
+  "networkuser@example.com": {
+    "username": "networkuser",
+    "password": "pbkdf2:sha256:600000$ThOmex2mMj6kNWq6$12466612a4d3f585288b8ade8a670e8be75599303ea45fadad739f092e4f0af9",
+    "verified": false
+  }
+}

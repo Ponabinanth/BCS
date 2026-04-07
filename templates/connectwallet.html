@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureChain Web3 Wallet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', serif;
+        }
+        
+        :root {
+            --primary: #4A6CF7;
+            --primary-light: #6A8AFF;
+            --secondary: #1E2238;
+            --dark: #0F1424;
+            --light: #F5F7FF;
+            --success: #00C896;
+            --warning: #FFB74D;
+            --danger: #FF6B6B;
+            --text: #2D3748;
+            --text-light: #718096;
+            --border: #E2E8F0;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0F1424 0%, #1E2238 100%);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: var(--text-light);
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .wallet-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .wallet-option:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(74, 108, 247, 0.2);
+        }
+        
+        .wallet-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .wallet-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .wallet-type {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: white;
+            border-radius: 10px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            font-weight: bold;
+            overflow: hidden;
+        }
+        
+        #qrCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .wallet-details {
+            display: none;
+        }
+        
+        .wallet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .wallet-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+        
+        .wallet-address {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .address-text {
+            font-family: monospace;
+            font-size: 16px;
+        }
+        
+        .copy-btn {
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: var(--primary-light);
+        }
+        
+        .balance-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .balance-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .token-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 20px;
+        }
+        
+        .token-name {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+        
+        .token-balance {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+        
+        .action-icon {
+            font-size: 24px;
+        }
+        
+        .action-text {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .activity-log {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .log-entry {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .log-time {
+            color: var(--text-light);
+            font-size: 12px;
+            min-width: 80px;
+        }
+        
+        .log-message {
+            font-size: 14px;
+        }
+        
+        .success {
+            color: var(--success);
+        }
+        
+        .error {
+            color: var(--danger);
+        }
+        
+        .info {
+            color: var(--primary);
+        }
+        
+        .disconnect-btn {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid var(--danger);
+            border-radius: 10px;
+            color: var(--danger);
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .disconnect-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: var(--secondary);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .modal-message {
+            margin-bottom: 25px;
+            color: var(--text-light);
+        }
+        
+        .modal-btn {
+            background: var(--primary);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn:hover {
+            background: var(--primary-light);
+        }
+        
+        .nft-gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .nft-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .nft-image {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(45deg, #6A8AFF, #8B5CF6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        
+        .nft-info {
+            padding: 10px;
+        }
+        
+        .nft-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .nft-id {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        .send-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            text-align: left;
+        }
+        
+        .form-label {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        
+        .form-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .send-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 968px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .wallet-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .balance-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nft-gallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel - Wallet Connection -->
+        <div class="card">
+            <div class="header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h1>SecureChain Wallet</h1>
+                </div>
+                <p class="subtitle">Connect your wallet to access Web3 services</p>
+            </div>
+            
+            <div class="wallet-grid">
+                <div class="wallet-option" onclick="connectWallet('MetaMask')">
+                    <div class="wallet-icon">🦊</div>
+                    <div class="wallet-name">MetaMask</div>
+                    <div class="wallet-type">Browser Extension</div>
+                </div>
+                
+                <div class="wallet-option" onclick="connectWallet('WalletConnect')">
+                    <div class="wallet-icon">🔗</div>
+                    <div class="wallet-name">WalletConnect</div>
+                    <div class="wallet-type">Multi-Chain</div>
+                </div>
+                
+                <div class="wallet-option" onclick="connectWallet('TrustWallet')">
+                    <div class="wallet-icon">🛡️</div>
+                    <div class="wallet-name">Trust Wallet</div>
+                    <div class="wallet-type">Mobile</div>
+                </div>
+                
+                <div class="wallet-option" onclick="connectWallet('Coinbase')">
+                    <div class="wallet-icon">🏦</div>
+                    <div class="wallet-name">Coinbase</div>
+                    <div class="wallet-type">Exchange</div>
+                </div>
+            </div>
+            
+            <div class="qr-section">
+                <p>Scan with mobile wallet</p>
+                <div class="qr-code">
+                    <canvas id="qrCanvas"></canvas>
+                </div>
+                <button class="copy-btn" onclick="showQRCode()">
+                    <i class="fas fa-qrcode"></i> Show QR Code
+                </button>
+            </div>
+        </div>
+        
+        <!-- Right Panel - Wallet Details -->
+        <div class="card wallet-details" id="walletDetails">
+            <div class="wallet-header">
+                <div class="wallet-info">
+                    <h2 id="connectedWallet">Wallet Connected</h2>
+                    <div class="status">
+                        <div class="status-dot"></div>
+                        <span>Connected</span>
+                    </div>
+                </div>
+                <div class="network">SecureChain Mainnet</div>
+            </div>
+            
+            <div class="wallet-address">
+                <div class="address-text" id="walletAddress">0x1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t</div>
+                <button class="copy-btn" onclick="copyAddress()">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+            
+            <div class="balance-grid">
+                <div class="balance-card">
+                    <div class="token-icon" style="background: rgba(139, 92, 246, 0.2); color: #8B5CF6;">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <div class="token-name">SecureChain</div>
+                    <div class="token-balance" id="scBalance">125.64 SC</div>
+                </div>
+                
+                <div class="balance-card">
+                    <div class="token-icon" style="background: rgba(79, 70, 229, 0.2); color: #4F46E5;">
+                        <i class="fab fa-ethereum"></i>
+                    </div>
+                    <div class="token-name">Ethereum</div>
+                    <div class="token-balance" id="ethBalance">2.45 ETH</div>
+                </div>
+                
+                <div class="balance-card">
+                    <div class="token-icon" style="background: rgba(16, 185, 129, 0.2); color: #10B981;">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="token-name">USD Coin</div>
+                    <div class="token-balance" id="usdcBalance">1,250.00 USDC</div>
+                </div>
+            </div>
+            
+            <div class="action-grid">
+                <div class="action-btn" onclick="signMessage()">
+                    <div class="action-icon">
+                        <i class="fas fa-pen-fancy"></i>
+                    </div>
+                    <div class="action-text">Sign Message</div>
+                </div>
+                
+                <div class="action-btn" onclick="verifyTransaction()">
+                    <div class="action-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <div class="action-text">Verify TX</div>
+                </div>
+                
+                <div class="action-btn" onclick="viewNFTs()">
+                    <div class="action-icon">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <div class="action-text">View NFTs</div>
+                </div>
+                
+                <div class="action-btn" onclick="sendTokens()">
+                    <div class="action-icon">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <div class="action-text">Send Tokens</div>
+                </div>
+            </div>
+            
+            <!-- NFT Gallery (Hidden by default) -->
+            <div id="nftGallery" style="display: none;">
+                <h3 style="margin-bottom: 15px;">Your NFT Collection</h3>
+                <div class="nft-gallery">
+                    <div class="nft-card">
+                        <div class="nft-image">🖼️</div>
+                        <div class="nft-info">
+                            <div class="nft-name">CryptoPunk #1234</div>
+                            <div class="nft-id">ID: 1234</div>
+                        </div>
+                    </div>
+                    <div class="nft-card">
+                        <div class="nft-image">🎨</div>
+                        <div class="nft-info">
+                            <div class="nft-name">Art Block #5678</div>
+                            <div class="nft-id">ID: 5678</div>
+                        </div>
+                    </div>
+                    <div class="nft-card">
+                        <div class="nft-image">👾</div>
+                        <div class="nft-info">
+                            <div class="nft-name">Bored Ape #9012</div>
+                            <div class="nft-id">ID: 9012</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="disconnect-btn" onclick="hideNFTs()" style="margin-top: 20px;">
+                    <i class="fas fa-arrow-left"></i> Back to Wallet
+                </button>
+            </div>
+            
+            <!-- Send Tokens Form (Hidden by default) -->
+            <div id="sendTokensForm" style="display: none;">
+                <h3 style="margin-bottom: 15px;">Send Tokens</h3>
+                <div class="send-form">
+                    <div class="form-group">
+                        <label class="form-label">Recipient Address</label>
+                        <input type="text" class="form-input" placeholder="0x..." id="recipientAddress">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount</label>
+                        <input type="text" class="form-input" placeholder="0.0" id="sendAmount">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Token</label>
+                        <select class="form-input" id="tokenSelect">
+                            <option value="SC">SecureChain (SC)</option>
+                            <option value="ETH">Ethereum (ETH)</option>
+                            <option value="USDC">USD Coin (USDC)</option>
+                        </select>
+                    </div>
+                    <div class="send-actions">
+                        <button class="copy-btn" style="flex: 1;" onclick="executeSend()">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                        <button class="disconnect-btn" style="flex: 1; margin-top: 0;" onclick="hideSendForm()">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="activity-log" id="activityLog">
+                <div class="log-header">
+                    <h3>Activity Log</h3>
+                    <button class="copy-btn" onclick="clearLog()">Clear</button>
+                </div>
+                <div id="logEntries">
+                    <div class="log-entry">
+                        <div class="log-time">12:30:45</div>
+                        <div class="log-message info">Web3 wallet portal initialized</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="disconnect-btn" onclick="disconnectWallet()">
+                <i class="fas fa-power-off"></i> Disconnect Wallet
+            </button>
+        </div>
+    </div>
+    
+    <!-- QR Code Modal -->
+    <div class="modal" id="qrModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-qrcode"></i>
+            </div>
+            <h2 class="modal-title">Scan QR Code</h2>
+            <p class="modal-message">Use your mobile wallet to scan this QR code and connect</p>
+            <div class="qr-code" style="margin: 20px auto;">
+                <canvas id="modalQrCanvas"></canvas>
+            </div>
+            <button class="modal-btn" onclick="closeQRCode()">Close</button>
+        </div>
+    </div>
+    
+    <!-- Alert Modal -->
+    <div class="modal" id="alertModal">
+        <div class="modal-content">
+            <div class="modal-icon" id="alertIcon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <h2 class="modal-title" id="alertTitle">Information</h2>
+            <p class="modal-message" id="alertMessage">This is an alert message</p>
+            <button class="modal-btn" onclick="closeAlert()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize QR codes
+        window.onload = function() {
+            generateQRCode('qrCanvas', 'https://securechain.com/connect/wallet');
+            generateQRCode('modalQrCanvas', 'https://securechain.com/connect/wallet');
+        };
+        
+        // Wallet connection functionality
+        function connectWallet(walletName) {
+            // Show loading state
+            logActivity(`Connecting to ${walletName}...`, 'info');
+            
+            // Simulate connection delay
+            setTimeout(() => {
+                // Update UI
+                document.getElementById('connectedWallet').textContent = `${walletName} Connected`;
+                document.getElementById('walletDetails').style.display = 'block';
+                
+                // Generate random address and balances
+                const address = generateRandomAddress();
+                document.getElementById('walletAddress').textContent = address;
+                
+                document.getElementById('scBalance').textContent = (Math.random() * 500 + 50).toFixed(2) + ' SC';
+                document.getElementById('ethBalance').textContent = (Math.random() * 3 + 0.1).toFixed(2) + ' ETH';
+                document.getElementById('usdcBalance').textContent = (Math.random() * 2000 + 500).toFixed(2) + ' USDC';
+                
+                logActivity(`Successfully connected to ${walletName}`, 'success');
+                showAlert('Wallet Connected', `You have successfully connected your ${walletName} wallet.`, 'success');
+            }, 1500);
+        }
+        
+        function disconnectWallet() {
+            document.getElementById('walletDetails').style.display = 'none';
+            document.getElementById('nftGallery').style.display = 'none';
+            document.getElementById('sendTokensForm').style.display = 'none';
+            document.getElementById('activityLog').style.display = 'block';
+            logActivity('Wallet disconnected', 'error');
+            showAlert('Wallet Disconnected', 'Your wallet has been disconnected.', 'info');
+        }
+        
+        function copyAddress() {
+            const address = document.getElementById('walletAddress').textContent;
+            navigator.clipboard.writeText(address).then(() => {
+                logActivity('Address copied to clipboard', 'success');
+                showAlert('Copied', 'Wallet address copied to clipboard.', 'success');
+            });
+        }
+        
+        function showQRCode() {
+            document.getElementById('qrModal').style.display = 'flex';
+        }
+        
+        function closeQRCode() {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+        
+        function signMessage() {
+            logActivity('Signing message...', 'info');
+            setTimeout(() => {
+                logActivity('Message signed successfully', 'success');
+                showAlert('Message Signed', 'Your message has been successfully signed.', 'success');
+            }, 1000);
+        }
+        
+        function verifyTransaction() {
+            logActivity('Verifying transaction...', 'info');
+            setTimeout(() => {
+                const txHash = generateRandomTxHash();
+                logActivity(`Transaction verified: ${txHash}`, 'success');
+                showAlert('Transaction Verified', `Your transaction has been successfully verified. Hash: ${txHash}`, 'success');
+            }, 1500);
+        }
+        
+        function viewNFTs() {
+            document.getElementById('activityLog').style.display = 'none';
+            document.getElementById('nftGallery').style.display = 'block';
+            logActivity('NFT gallery opened', 'info');
+        }
+        
+        function hideNFTs() {
+            document.getElementById('nftGallery').style.display = 'none';
+            document.getElementById('activityLog').style.display = 'block';
+        }
+        
+        function sendTokens() {
+            document.getElementById('activityLog').style.display = 'none';
+            document.getElementById('sendTokensForm').style.display = 'block';
+            logActivity('Send tokens form opened', 'info');
+        }
+        
+        function hideSendForm() {
+            document.getElementById('sendTokensForm').style.display = 'none';
+            document.getElementById('activityLog').style.display = 'block';
+        }
+        
+        function executeSend() {
+            const recipient = document.getElementById('recipientAddress').value;
+            const amount = document.getElementById('sendAmount').value;
+            const token = document.getElementById('tokenSelect').value;
+            
+            if (!recipient || !amount) {
+                showAlert('Error', 'Please fill in all fields', 'error');
+                return;
+            }
+            
+            logActivity(`Sending ${amount} ${token} to ${recipient.substring(0, 10)}...`, 'info');
+            
+            setTimeout(() => {
+                const txHash = generateRandomTxHash();
+                logActivity(`Transaction sent: ${txHash}`, 'success');
+                showAlert('Transaction Sent', `You have successfully sent ${amount} ${token}. Transaction hash: ${txHash}`, 'success');
+                
+                // Reset form
+                document.getElementById('recipientAddress').value = '';
+                document.getElementById('sendAmount').value = '';
+                hideSendForm();
+            }, 2000);
+        }
+        
+        function logActivity(message, type) {
+            const logEntries = document.getElementById('logEntries');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const now = new Date();
+            const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            
+            entry.innerHTML = `
+                <div class="log-time">${time}</div>
+                <div class="log-message ${type}">${message}</div>
+            `;
+            
+            logEntries.prepend(entry);
+            
+            // Limit log entries
+            if (logEntries.children.length > 10) {
+                logEntries.removeChild(logEntries.lastChild);
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('logEntries').innerHTML = '';
+            logActivity('Log cleared', 'info');
+        }
+        
+        function showAlert(title, message, type) {
+            const alertModal = document.getElementById('alertModal');
+            const alertIcon = document.getElementById('alertIcon');
+            const alertTitle = document.getElementById('alertTitle');
+            const alertMessage = document.getElementById('alertMessage');
+            
+            alertTitle.textContent = title;
+            alertMessage.textContent = message;
+            
+            // Set icon based on type
+            if (type === 'success') {
+                alertIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #00C896;"></i>';
+            } else if (type === 'error') {
+                alertIcon.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #FF6B6B;"></i>';
+            } else {
+                alertIcon.innerHTML = '<i class="fas fa-info-circle" style="color: #4A6CF7;"></i>';
+            }
+            
+            alertModal.style.display = 'flex';
+        }
+        
+        function closeAlert() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+        
+        function generateRandomAddress() {
+            const chars = '0123456789abcdef';
+            let address = '0x';
+            for (let i = 0; i < 40; i++) {
+                address += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return address;
+        }
+        
+        function generateRandomTxHash() {
+            const chars = '0123456789abcdef';
+            let hash = '0x';
+            for (let i = 0; i < 64; i++) {
+                hash += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return hash;
+        }
+        
+        function generateQRCode(canvasId, text) {
+            const canvas = document.getElementById(canvasId);
+            QRCode.toCanvas(canvas, text, function (error) {
+                if (error) console.error(error);
+            });
+        }
+        
+        // Initialize with a log entry
+        logActivity('Web3 wallet portal initialized', 'info');
+    </script>
+</body>
+</html>

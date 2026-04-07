@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureChain Authentication</title>
+    <style>
+        /* Global Reset and Dark Mode Setup */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0d0d2b, #1a1a3a);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Navigation Styling */
+        .nav-container {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(13, 13, 43, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-link {
+            color: #a0a0a0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 8px 15px;
+            border-radius: 6px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #00f2fe;
+            background: rgba(0, 242, 254, 0.1);
+        }
+
+        /* Page Container */
+        .page-container {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 80px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Auth Box Styling */
+        .auth-container {
+            background: #181a2b;
+            padding: 40px 30px;
+            border-radius: 16px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 0 32px rgba(0, 242, 254, 0.3);
+            text-align: center;
+            margin: 0 auto;
+        }
+
+        .auth-container h2 {
+            color: #fff;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        .input-group {
+            position: relative;
+            margin: 15px 0;
+        }
+
+        .auth-container input[type="text"],
+        .auth-container input[type="email"],
+        .auth-container input[type="password"] {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            background: #222;
+            color: #fff;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .auth-container input:focus {
+            outline: none;
+            border-color: #00f2fe;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #a0a0a0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .password-toggle:hover {
+            color: #00f2fe;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #a0a0a0;
+        }
+
+        .checkbox-group input {
+            margin-right: 8px;
+        }
+
+        .auth-container button[type="submit"] {
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+            transition: all 0.3s;
+        }
+
+        .auth-container button[type="submit"]:hover {
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            box-shadow: 0 0 12px rgba(79, 172, 254, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .auth-container button[type="submit"]:disabled {
+            background: #555;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .auth-footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #a0a0a0;
+        }
+
+        .auth-footer a {
+            color: #00f2fe;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .auth-footer a:hover {
+            color: #4facfe;
+            text-decoration: underline;
+        }
+
+        /* Dashboard Styling */
+        .dashboard-container {
+            background: #181a2b;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 0 32px rgba(0, 242, 254, 0.3);
+            text-align: center;
+        }
+
+        .dashboard-container h2 {
+            color: #fff;
+            margin-bottom: 25px;
+            font-size: 2em;
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .user-info {
+            background: rgba(0, 242, 254, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .user-info p {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .dashboard-btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+            transition: all 0.3s;
+        }
+
+        .dashboard-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 15px rgba(79, 172, 254, 0.7);
+        }
+
+        .logout-btn {
+            background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+            box-shadow: 0 0 8px rgba(255, 107, 107, 0.5);
+        }
+
+        .logout-btn:hover {
+            box-shadow: 0 0 15px rgba(255, 142, 142, 0.7);
+        }
+
+        /* Alert Box Styling */
+        #custom-alert-container {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            z-index: 1001;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .alert-box {
+            padding: 12px 18px;
+            margin-top: 8px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            color: white;
+            font-weight: 600;
+            transition: all 0.5s ease-out;
+            opacity: 0;
+            transform: translateX(40px);
+            max-width: 300px;
+        }
+
+        .alert-box-in {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .bg-blue {
+            background-color: #4facfe;
+        }
+
+        .bg-red {
+            background-color: #dc3545;
+        }
+
+        .bg-green {
+            background-color: #28a745;
+        }
+
+        .bg-yellow {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Home Page Styling */
+        .home-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .hero-section {
+            margin-bottom: 60px;
+        }
+
+        .hero-section h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .hero-btn {
+            padding: 14px 30px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .primary-btn {
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            color: #fff;
+            box-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 15px rgba(79, 172, 254, 0.7);
+        }
+
+        .secondary-btn {
+            background: transparent;
+            color: #00f2fe;
+            border: 2px solid #00f2fe;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(0, 242, 254, 0.1);
+        }
+
+        .features-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: #181a2b;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #00f2fe;
+        }
+
+        .feature-card p {
+            color: #a0a0a0;
+            line-height: 1.6;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .hero-section h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .hero-btn {
+                width: 100%;
+                max-width: 250px;
+            }
+            
+            .auth-container, .dashboard-container {
+                padding: 30px 20px;
+            }
+            
+            .dashboard-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .dashboard-btn {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="nav-content">
+            <div class="logo">SecureChain</div>
+            <div class="nav-links">
+                <a href="#" class="nav-link" data-page="home">Home</a>
+                <a href="#" class="nav-link" data-page="login">Login</a>
+                <a href="#" class="nav-link" data-page="signup">Sign Up</a>
+                <a href="#" class="nav-link" data-page="dashboard" id="dashboardLink" style="display: none;">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <div class="page-container active" id="homePage">
+        <div class="home-container">
+            <div class="hero-section">
+                <h1>SecureChain Authentication</h1>
+                <p>Advanced blockchain-based authentication system for secure access to your digital assets and applications.</p>
+                <div class="hero-buttons">
+                    <button class="hero-btn primary-btn" onclick="showPage('signup')">Get Started</button>
+                    <button class="hero-btn secondary-btn" onclick="showPage('login')">Sign In</button>
+                </div>
+            </div>
+            
+            <div class="features-section">
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Blockchain Security</h3>
+                    <p>Leverage the power of blockchain technology for tamper-proof authentication records and enhanced security.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Experience quick and seamless authentication with our optimized verification algorithms.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Universal Access</h3>
+                    <p>Access your account securely from any device, anywhere in the world with our cross-platform solution.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Page -->
+    <div class="page-container" id="loginPage">
+        <div class="auth-container">
+            <h2>User Login</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <input type="email" placeholder="Email" required name="email" autocomplete="email" />
+                </div>
+                <div class="input-group">
+                    <input type="password" placeholder="Password" required name="password" autocomplete="current-password" id="loginPassword" />
+                    <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', 'loginToggle')" id="loginToggle">Show</button>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="rememberMe" name="rememberMe">
+                    <label for="rememberMe">Remember me</label>
+                </div>
+                <button type="submit" id="loginBtn">Login</button>
+            </form>
+            <p class="auth-footer">
+                Don't have an account? <a href="#" onclick="showPage('signup')">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Signup Page -->
+    <div class="page-container" id="signupPage">
+        <div class="auth-container">
+            <h2>Create Account</h2>
+            <form id="signupForm">
+                <div class="input-group">
+                    <input type="text" placeholder="Username (Optional)" name="username" autocomplete="username" />
+                </div>
+                <div class="input-group">
+                    <input type="email" placeholder="Email" required name="email" autocomplete="email" />
+                </div>
+                <div class="input-group">
+                    <input type="password" placeholder="Password" required name="password" autocomplete="new-password" id="signupPassword" />
+                    <button type="button" class="password-toggle" onclick="togglePassword('signupPassword', 'signupToggle')" id="signupToggle">Show</button>
+                </div>
+                <button type="submit" id="signupBtn">Sign Up</button>
+            </form>
+            <p class="auth-footer">
+                Already have an account? <a href="#" onclick="showPage('login')">Login</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div class="page-container" id="dashboardPage">
+        <div class="dashboard-container">
+            <h2>Welcome to SecureChain</h2>
+            <div class="user-info">
+                <p id="userEmailDisplay">User: loading...</p>
+                <p>Status: <span style="color: #00f2fe;">Authenticated</span></p>
+                <p>Last Login: <span id="lastLoginTime">Just now</span></p>
+            </div>
+            <div class="dashboard-actions">
+                <button class="dashboard-btn" onclick="redirectToHome()">Go to Home Page</button>
+                <button class="dashboard-btn">View Profile</button>
+                <button class="dashboard-btn">Security Settings</button>
+                <button class="dashboard-btn logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="custom-alert-container"></div>
+
+    <script>
+        // ===================================
+        // === ALERT BOX LOGIC ===
+        // ===================================
+
+        const alertBox = {
+            element: null,
+            init: function () {
+                this.container = document.getElementById("custom-alert-container");
+            },
+            show: function (message, type = "info") {
+                if (!this.container) this.init();
+
+                let bgColorClass = "bg-blue"; // Default blue
+                let icon = "ℹ️";
+
+                if (type === "error") {
+                    bgColorClass = "bg-red";
+                    icon = "❌";
+                } else if (type === "success") {
+                    bgColorClass = "bg-green";
+                    icon = "✅";
+                } else if (type === "warning") {
+                    bgColorClass = "bg-yellow";
+                    icon = "⚠️";
+                }
+
+                // Create the alert element
+                const alertEl = document.createElement("div");
+                alertEl.className = `alert-box ${bgColorClass}`;
+                alertEl.innerHTML = `<div class="alert-content"><span style="font-size:1.2em;">${icon}</span><span>${message}</span></div>`;
+
+                this.container.appendChild(alertEl);
+
+                // Animate in
+                setTimeout(() => {
+                    alertEl.classList.add("alert-box-in");
+                }, 10);
+
+                // Animate out and remove after 4 seconds
+                setTimeout(() => {
+                    alertEl.classList.remove("alert-box-in");
+                    // Remove from DOM after transition
+                    setTimeout(() => alertEl.remove(), 500);
+                }, 4000);
+            },
+        };
+
+        // ===================================
+        // === PAGE NAVIGATION ===
+        // ===================================
+
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-container').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show the selected page
+            document.getElementById(`${pageId}Page`).classList.add('active');
+            
+            // Update navigation links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-page') === pageId) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Show/hide dashboard link based on authentication
+            const dashboardLink = document.getElementById('dashboardLink');
+            if (isLoggedIn()) {
+                dashboardLink.style.display = 'block';
+            } else {
+                dashboardLink.style.display = 'none';
+            }
+        }
+
+        // ===================================
+        // === AUTHENTICATION LOGIC ===
+        // ===================================
+
+        let isSubmitting = false;
+
+        // Check if user is logged in
+        function isLoggedIn() {
+            return localStorage.getItem('user_email') !== null;
+        }
+
+        // Toggle password visibility
+        function togglePassword(passwordFieldId, toggleButtonId) {
+            const passwordInput = document.getElementById(passwordFieldId);
+            const toggleButton = document.getElementById(toggleButtonId);
+            
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                toggleButton.textContent = "Hide";
+            } else {
+                passwordInput.type = "password";
+                toggleButton.textContent = "Show";
+            }
+        }
+
+        // Validate email format
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Validate password strength
+        function isValidPassword(password) {
+            // At least 8 characters, with at least one uppercase, one lowercase, one number and one special character
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            return passwordRegex.test(password);
+        }
+
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isSubmitting) return;
+            
+            const email = this.elements.email.value;
+            const password = this.elements.password.value;
+            const rememberMe = this.elements.rememberMe.checked;
+            const loginBtn = document.getElementById('loginBtn');
+
+            if (!email || !password) {
+                return alertBox.show("Email and password are required.", "error");
+            }
+            
+            if (!isValidEmail(email)) {
+                return alertBox.show("Please enter a valid email address.", "error");
+            }
+            
+            isSubmitting = true;
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="loading-spinner"></span> Logging in...';
+
+            try {
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // For demo purposes, accept any email/password combination
+                // In a real app, you would validate against your backend
+                localStorage.setItem('user_email', email);
+                localStorage.setItem('remember_me', rememberMe.toString());
+                localStorage.setItem('last_login', new Date().toLocaleString());
+                
+                alertBox.show("Login successful! Redirecting to home page...", "success");
+                
+                setTimeout(() => {
+                    // Redirect to the home page (index.html)
+                    window.location.href = 'index.html';
+                }, 1500);
+                
+            } catch (error) {
+                alertBox.show("Login failed. Please try again.", "error");
+                console.error("Login error:", error);
+            } finally {
+                isSubmitting = false;
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        });
+
+        // Handle signup form submission
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isSubmitting) return;
+            
+            const email = this.elements.email.value;
+            const password = this.elements.password.value;
+            const username = this.elements.username.value || "";
+            const signupBtn = document.getElementById('signupBtn');
+
+            if (!email || !password) {
+                return alertBox.show("Email and password are required.", "error");
+            }
+            
+            if (!isValidEmail(email)) {
+                return alertBox.show("Please enter a valid email address.", "error");
+            }
+            
+            if (!isValidPassword(password)) {
+                return alertBox.show(
+                    "Password must be at least 8 characters with uppercase, lowercase, number, and special character.",
+                    "error"
+                );
+            }
+            
+            isSubmitting = true;
+            signupBtn.disabled = true;
+            signupBtn.innerHTML = '<span class="loading-spinner"></span> Creating account...';
+
+            try {
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // For demo purposes, accept any signup
+                // In a real app, you would send this data to your backend
+                alertBox.show("Account created successfully! Please log in.", "success");
+                
+                setTimeout(() => {
+                    showPage('login');
+                    // Pre-fill the email in the login form
+                    document.querySelector('#loginForm input[name="email"]').value = email;
+                }, 1500);
+                
+            } catch (error) {
+                alertBox.show("Signup failed. Please try again.", "error");
+                console.error("Signup error:", error);
+            } finally {
+                isSubmitting = false;
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'Sign Up';
+            }
+        });
+
+        // Redirect to home page
+        function redirectToHome() {
+            window.location.href = 'index.html';
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('remember_me');
+            alertBox.show("You have been logged out.", "info");
+            
+            setTimeout(() => {
+                showPage('home');
+                // Clear forms
+                document.getElementById('loginForm').reset();
+                document.getElementById('signupForm').reset();
+            }, 1000);
+        }
+
+        // ===================================
+        // === INITIALIZATION ===
+        // ===================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            alertBox.init();
+            
+            // Set up navigation links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    showPage(page);
+                });
+            });
+            
+            // Check if user is already logged in
+            if (isLoggedIn()) {
+                showPage('dashboard');
+                const userEmail = localStorage.getItem('user_email');
+                document.getElementById('userEmailDisplay').textContent = `User: ${userEmail}`;
+                document.getElementById('lastLoginTime').textContent = localStorage.getItem('last_login') || 'Just now';
+            } else {
+                showPage('home');
+            }
+        });
+    </script>
+</body>
+</html>

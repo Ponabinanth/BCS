@@ -1,0 +1,1273 @@
+/* Example selector for the loose properties at the top */
+.example-class {
+  padding: 18px 48px;
+  font-size: 1.25em;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto 18px auto;
+  display: block;
+}
+
+/* ===== Section Headings (Theme Color) ===== */
+
+.threatmap-heading,
+.contact-heading {
+  font-size: 2em;
+  font-weight: 600;
+  color: var(--section-heading-color, #000);
+  transition: color 0.3s;
+}
+
+.wallet-address-card {
+  background: #1a2636;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #00f0ff44;
+  padding: 16px 24px;
+  margin: 0 auto;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wallet-address-label {
+  color: #00ffe0;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.wallet-address-value {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 1em;
+  word-break: break-all;
+  text-align: center;
+}
+
+.wallet-address-box {
+  width: 90%;
+  margin: 10px auto 0 auto;
+  background: #181a2b;
+  color: #00ffe0;
+  border-radius: 8px;
+  font-size: 1em;
+  font-family: 'Courier New', monospace;
+  padding: 8px 12px;
+  text-align: center;
+  word-break: break-all;
+  box-shadow: 0 0 8px #00f2fe44;
+}
+
+body.light-mode .threatmap-heading,
+body.light-mode .contact-heading {
+  --section-heading-color: #000;
+}
+
+body.dark-mode .threatmap-heading,
+body.dark-mode .contact-heading {
+  --section-heading-color: #fff;
+}
+
+/* ===== Console Heading (Theme Color, Full Left) ===== */
+.console-heading {
+  font-size: 2em;
+  font-weight: 600;
+  color: var(--section-heading-color, #000);
+  transition: color 0.3s;
+  margin-left: 0;
+}
+
+body.light-mode .console-heading {
+  --section-heading-color: #000;
+}
+
+body.dark-mode .console-heading {
+  --section-heading-color: #fff;
+}
+
+/* ===== GLOBAL RESET ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #0a0f1f;
+  color: #f0f0f0;
+  scroll-behavior: smooth;
+  line-height: 1.6;
+}
+
+a {
+  color: #00ffe0;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+a:hover {
+  color: #00ffcc;
+}
+
+button {
+  background: linear-gradient(90deg, #00ffe0, #007bff);
+  border: none;
+  padding: 10px 20px;
+  color: #000;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00ffe0;
+  transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #007bff, #00ffe0);
+}
+
+.btn {
+  background: linear-gradient(90deg, #00ffe0, #007bff);
+  border: none;
+  padding: 10px 20px;
+  color: #000;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00ffe0;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #007bff, #00ffe0);
+}
+
+.btn.secondary {
+  background: linear-gradient(90deg, #666, #999);
+  box-shadow: 0 0 10px #666;
+}
+
+.btn.secondary:hover {
+  background: linear-gradient(90deg, #999, #666);
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  background-color: #10182f;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #02f6d9;
+  text-shadow: 0 0 10px #00ffe0;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links:hover {
+  text-shadow: 0 0 40px #f32365;
+}
+
+
+.nav-links li {
+  font-size: 1.1em;
+}
+
+.actions button {
+  margin-left: 10px;
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+  text-align: center;
+  padding: 100px 20px;
+  background: radial-gradient(ellipse at center, #131c31 0%, #0a0f1f 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.hero h1 {
+  font-size: 3em;
+  color: #00ffe0;
+  text-shadow: 0 0 20px #00ffe0;
+  margin-bottom: 15px;
+}
+
+.hero p {
+  font-size: 1.2em;
+  color: #bbb;
+  max-width: 700px;
+  margin: 0 auto 30px auto;
+}
+
+.hero-glow {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.3), transparent 40%);
+
+  animation: pulse 4s infinite;
+  z-index: 1;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: translateX(-50%) scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* ===== FEATURES GRID ===== */
+.features-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+  padding-top: 150px;
+}
+
+.feature-card {
+  flex: 1 1 260px;
+  max-width: 320px;
+  min-width: 220px;
+  margin: 16px 0;
+  background-color: #131c31;
+  border: 1px solid #00ffe055;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  transition: transform 0.3s;
+  animation: floatIn 1s ease-in;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 20px #00ffe0aa;
+}
+
+.feature-card i {
+  font-size: 2em;
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* ===== SERVICE CARDS ===== */
+.service-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  padding: 50px 20px;
+  padding-top: 150px;
+}
+
+.service-card {
+  width: 250px;
+  background: #1d253f;
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid #00ffe055;
+  transition: all 0.3s ease;
+}
+
+/* Threat Scan Styles */
+.section-padding {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.section-heading {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    color: #00f2fe;
+}
+
+.threatscan-heading {
+    color: #ff6b6b;
+}
+
+.section-subtext {
+    font-size: 1.2em;
+    color: #b0b0b0;
+    margin-bottom: 40px;
+}
+
+.scan-card {
+    max-width: 600px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #1a1a2a, #16213e);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 242, 254, 0.2);
+    border: 1px solid rgba(0, 242, 254, 0.3);
+}
+
+.scan-card input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #00f2fe;
+    border-radius: 8px;
+    background: #0d0d2b;
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+}
+
+.scan-card input:focus {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+}
+
+.scan-card button {
+    background: linear-gradient(45deg, #00f2fe, #4facfe);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.scan-card button:hover {
+    background: linear-gradient(45deg, #ff6b6b, #ffa726);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.scan-container {
+    margin-bottom: 20px;
+}
+
+#scanStatus {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #00f2fe;
+}
+
+.scan-bar {
+    width: 100%;
+    height: 20px;
+    background: rgba(0, 242, 254, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    position: relative;
+}
+
+.scan-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00f2fe, #4facfe);
+    border-radius: 10px;
+    transition: width 0.1s ease;
+}
+
+.result-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    min-height: 100px;
+    text-align: left;
+    color: #fff;
+    font-family: monospace;
+}
+
+.threatmap-btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 20px;
+  font-size: 1.15em;
+  font-weight: bold;
+  background: #44b6e6;
+  color: #fff;
+  margin-right: 24px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.threatmap-btn:last-child {
+  background: #f44336;
+
+  /* Example selector for the loose properties around line 302–324 */
+  .another-example-class {
+    padding: 14px;
+    width: 60%;
+    max-width: 400px;
+    border-radius: 8px;
+    border: none;
+    margin-right: 18px;
+    font-size: 1.15em;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .yet-another-example-class {
+    display: block;
+    margin: 0 auto;
+    padding: 18px 48px;
+    font-size: 1.25em;
+    font-weight: bold;
+    background: linear-gradient(90deg, #00f2fe, #4facfe);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 0 18px 4px #00f2fe;
+    cursor: pointer;
+    transition: box-shadow 0.2s, background 0.2s;
+  }
+
+  cursor: pointer;
+  transition: box-shadow 0.2s,
+  background 0.2s;
+}
+
+.explorer {
+  text-align: center;
+}
+
+.explorer pre {
+  text-align: left;
+  margin-top: 20px;
+  background: #181f3a;
+  padding: 20px;
+  border-radius: 10px;
+  white-space: pre-wrap;
+}
+
+/* ===== THREAT MAP & CHART ===== */
+#map,
+#analyticsChart {
+  height: 250px;
+  background: #1a1a2e;
+  margin: 20px auto;
+  max-width: 700px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px #00ffe033;
+  padding: 10px;
+}
+
+#threatmap {
+  padding-top: 120px;
+  padding-left: 50px;
+}
+
+
+/* ===== CONTACT FORM ===== */
+.contact form {
+  max-width: 500px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 40px 0;
+}
+
+#contact {
+  padding-left: 80px;
+  padding-top: 50px;
+}
+
+.contact input,
+.contact textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #131c31;
+  color: #fff;
+}
+
+#formStatus {
+  margin-top: 10px;
+  color: #00ffe0;
+}
+
+/* ===== FOOTER ===== */
+footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #10182f;
+  color: #888;
+  font-size: 0.9em;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes floatIn {
+  0% {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Default: Dark Theme (Initial) */
+:root {
+  --bg-color: #0f172a;
+  --text-color: #e2e8f0;
+  --card-color: #1e293b;
+  --accent-color: #38bdf8;
+}
+
+/* Light Theme Variables */
+.light-theme {
+  --bg-color: #f1f5f9;
+  --text-color: #0f172a;
+  --card-color: #ffffff;
+  --accent-color: #2563eb;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.card,
+.feature-card,
+.service-card {
+  background: var(--card-color);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+a,
+h1,
+h2,
+h3,
+p,
+button {
+  color: var(--text-color);
+}
+
+button {
+  background-color: var(--accent-color);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  filter: brightness(1.1);
+}
+
+.actions button {
+  margin-right: 10px;
+}
+
+body.light-mode {
+  background-color: #f5f5f5;
+  color: #111;
+}
+
+body.dark-mode {
+  background-color: #0c0c1e;
+  color: #f1f1f1;
+}
+
+.fax {
+  background-color: #0ff;
+  color: #000;
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 0 10px #0ff;
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+
+
+.fax:hover {
+  background-color: #00bfff;
+  color: #fff;
+  box-shadow: 0 0 15px #00bfff;
+  transform: scale(1.1);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  /* adjust spacing */
+}
+
+/* ===== THREAT SCAN RESULTS BOX ===== */
+#threatScanResults {
+  margin-top: 20px;
+  padding: 15px;
+  background: #131c31;
+  border: 1px solid #00ffe055;
+  border-radius: 10px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  color: #00ffe0;
+  font-family: monospace;
+  white-space: pre-wrap;
+  box-shadow: 0 0 10px #00ffe055;
+}
+
+/* ===== NFT TOKEN INPUT ===== */
+#nftTokenId {
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+  width: 80%;
+  background: #0a0f1f;
+  color: #00ffe0;
+  font-size: 1em;
+}
+
+#nftVerificationResult {
+  margin-top: 15px;
+  color: #00ffcc;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* ===== IOT DEVICE REGISTRATION INPUTS ===== */
+#deviceName,
+#deviceType {
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+  width: 80%;
+  background: #0a0f1f;
+  color: #00ffe0;
+  font-size: 1em;
+}
+
+#deviceResult {
+  margin-top: 10px;
+  color: #00ffcc;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+/* ===== Input Fields Neon Glow Style ===== */
+.input-glow {
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid #00ffe0aa;
+  width: 90%;
+  background: #0c1226;
+  color: #00ffe0;
+  font-size: 1em;
+  transition: 0.3s;
+  outline: none;
+  box-shadow: 0 0 8px #00ffe0aa;
+}
+
+.input-glow:focus {
+  box-shadow: 0 0 12px #00ffe0;
+  background: #10182f;
+}
+
+/* ===== Glow Output Box (Results) ===== */
+.glow-box {
+  margin-top: 15px;
+  padding: 15px;
+  background: #131c31;
+  border: 1px solid #00ffe055;
+  border-radius: 12px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  color: #00ffe0;
+  font-family: 'Courier New', monospace;
+  white-space: pre-wrap;
+  box-shadow: 0 0 12px #00ffe055;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.5s ease-out;
+}
+
+/* Fade-in animation when content is shown */
+.glow-box.fade-in.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== Animated Scan Dots (optional visual) ===== */
+@keyframes dots {
+  0% {
+    content: ".";
+  }
+
+  33% {
+    content: "..";
+  }
+
+  66% {
+    content: "...";
+  }
+
+  100% {
+    content: ".";
+  }
+}
+
+/* Reusable Animation Classes */
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px #00ffe033;
+  }
+
+  50% {
+    box-shadow: 0 0 20px #00ffe0aa;
+  }
+}
+
+/* ===== Console Heading (Left Near Margin) ===== */
+.console-heading {
+  font-size: 2em;
+  font-weight: 600;
+  color: var(--section-heading-color, #000);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-left: 0;
+  margin-top: 24px;
+  transition: color 0.ms;
+}
+
+body.light-mode .console-heading {
+  --section-heading-color: #000;
+}
+
+body.dark-mode .console-heading {
+  --section-heading-color: #fff;
+}
+
+/* ===== Features Row ===== */
+.features-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 100px;
+  margin-bottom: 60px;
+}
+
+.features-row .feature-card {
+  flex: 1 1 220px;
+  max-width: 320px;
+  min-width: 180px;
+  margin: 0 12px;
+}
+
+/* IoT Register Page */
+.page-iot {
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  border: 2px solid #0ff;
+  box-shadow: 0px 0px 20px rgba(0, 255, 255, 0.3);
+}
+
+/* NFT Verify Page */
+.page-nft {
+  background: linear-gradient(135deg, #2c003e, #5a189a, #7b2cbf);
+  border: 2px solid #ff00ff;
+  box-shadow: 0px 0px 20px rgba(255, 0, 255, 0.4);
+}
+
+/* Analytics Page */
+.page-analytics {
+  background: linear-gradient(135deg, #001219, #005f73, #0a9396);
+  border: 2px solid #00eaff;
+  box-shadow: 0px 0px 20px rgba(0, 234, 255, 0.3);
+}
+
+/* Wallet Connect Page */
+.page-wallet {
+  background: linear-gradient(135deg, #141e30, #243b55);
+  border: 2px solid #ffd700;
+  box-shadow: 0px 0px 20px rgba(255, 215, 0, 0.4);
+}
+
+/* ===== Threat Scan Theme Colors ===== */
+:root {
+  --threatscan-bg-gradient-start: #001a1a;
+  --threatscan-bg-gradient-end: #003d3d;
+  --threatscan-box-shadow: rgba(0, 255, 255, 0.07);
+  --threatscan-text-color: #c8ffff;
+  --threatscan-border-color: rgba(0, 255, 255, 0.13);
+  --threatscan-heading-color: #99ffff;
+  --threatscan-anim-bg: rgba(0, 255, 255, 0.04);
+  --threatscan-anim-border: rgba(0, 255, 255, 0.08);
+  --threatscan-bar-gradient-start: #00fff0;
+  --threatscan-bar-gradient-end: #00b3ff;
+  --threatscan-dot-bg: #00e6e6;
+  --threatscan-dot-shadow: #00e6e6;
+  --threatscan-dot-highlight: #ffffff;
+  --threatscan-status-color: #ddffff;
+  --threatscan-result-bg: rgba(0, 0, 0, 0.06);
+  --threatscan-result-color: #ccffee;
+  --threatscan-result-border: rgba(0, 255, 255, 0.03);
+  --sev-good-bg: rgba(0, 200, 120, 0.12);
+  --sev-good-color: #88ffff;
+  --sev-good-border: rgba(0, 200, 120, 0.15);
+  --sev-bad-bg: rgba(255, 140, 0, 0.08);
+  --sev-bad-color: #ffd88f;
+  --sev-bad-border: rgba(255, 140, 0, 0.12);
+  --sev-high-bg: rgba(255, 40, 40, 0.08);
+  --sev-high-color: #ffd8d8;
+  --sev-high-border: rgba(255, 40, 40, 0.12);
+}
+
+/* Light theme overrides */
+body.light-mode {
+  --threatscan-bg-gradient-start: #d0f0f0;
+  --threatscan-bg-gradient-end: #a0d0d0;
+  --threatscan-box-shadow: rgba(0, 128, 128, 0.1);
+  --threatscan-text-color: #004040;
+  --threatscan-border-color: rgba(0, 128, 128, 0.3);
+  --threatscan-heading-color: #006666;
+  --threatscan-anim-bg: rgba(0, 128, 128, 0.1);
+  --threatscan-anim-border: rgba(0, 128, 128, 0.2);
+  --threatscan-bar-gradient-start: #00b3b3;
+  --threatscan-bar-gradient-end: #007777;
+  --threatscan-dot-bg: #009999;
+  --threatscan-dot-shadow: #009999;
+  --threatscan-dot-highlight: #ffffff;
+  --threatscan-status-color: #004040;
+  --threatscan-result-bg: rgba(240, 240, 240, 0.6);
+  --threatscan-result-color: #004040;
+  --threatscan-result-border: rgba(0, 128, 128, 0.1);
+  --sev-good-bg: rgba(0, 150, 80, 0.12);
+  --sev-good-color: #006644;
+  --sev-good-border: rgba(0, 150, 80, 0.3);
+  --sev-bad-bg: rgba(255, 180, 80, 0.08);
+  --sev-bad-color: #aa6600;
+  --sev-bad-border: rgba(255, 180, 80, 0.2);
+  --sev-high-bg: rgba(255, 80, 80, 0.08);
+  --sev-high-color: #aa4444;
+  --sev-high-border: rgba(255, 80, 80, 0.2);
+}
+
+/* Threat Scan styles using CSS variables */
+.scan-card {
+  background: linear-gradient(180deg, var(--threatscan-bg-gradient-start) 60%, var(--threatscan-bg-gradient-end) 100%);
+  border-radius: 14px;
+  box-shadow: 0 6px 24px var(--threatscan-box-shadow);
+  padding: 22px;
+  color: var(--threatscan-text-color);
+  font-family: Inter, monospace;
+  border: 1px solid var(--threatscan-border-color);
+  max-width: 420px;
+  margin: 80px auto;
+}
+
+.scan-card h3 {
+  margin-top: 0;
+  color: var(--threatscan-heading-color);
+}
+
+.scan-anim-wrap {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 18px 0;
+}
+
+.scan-anim {
+  position: relative;
+  width: 220px;
+  height: 16px;
+  background: var(--threatscan-anim-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--threatscan-anim-border);
+}
+
+.scan-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--threatscan-bar-gradient-start), var(--threatscan-bar-gradient-end));
+  border-radius: 8px;
+  transition: width 0.2s;
+}
+
+.scan-dot {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  background: var(--threatscan-dot-bg);
+  border-radius: 50%;
+  box-shadow: 0 0 18px var(--threatscan-dot-shadow), 0 0 2px var(--threatscan-dot-highlight);
+  transform: translateY(-50%) scale(0.7);
+  opacity: 0;
+}
+
+.scan-anim.scanning .scan-dot {
+  animation: scanDotMove 2.2s linear forwards;
+  opacity: 1;
+}
+
+.scan-status {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--threatscan-status-color);
+}
+
+.scan-result {
+  font-family: monospace;
+  font-size: 14px;
+  color: var(--threatscan-result-color);
+  white-space: pre-wrap;
+  background: var(--threatscan-result-bg);
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px dashed var(--threatscan-result-border);
+  min-height: 40px;
+  margin-top: 8px;
+}
+
+.sev-good {
+  background: var(--sev-good-bg);
+  color: var(--sev-good-color);
+  border: 1px solid var(--sev-good-border);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.sev-bad {
+  background: var(--sev-bad-bg);
+  color: var(--sev-bad-color);
+  border: 1px solid var(--sev-bad-border);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.sev-high {
+  background: var(--sev-high-bg);
+  color: var(--sev-high-color);
+  border: 1px solid var(--sev-high-border);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+/* style.css (New Chatbot Styles) */
+
+/* === CHATBOT CORE STYLES === */
+#chatbot {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+#chatToggle {
+  background: radial-gradient(circle at 30% 30%, #00f2fe, #4facfe);
+  border: none;
+  padding: 15px 18px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 0 20px #00f2fe, 0 0 40px #4facfe;
+  transition: transform 0.2s;
+  animation: glowPulse 2s infinite;
+  /* Uses the existing glowPulse keyframes */
+}
+
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 15px #00f2fe, 0 0 30px #4facfe;
+  }
+
+  50% {
+    box-shadow: 0 0 30px #4facfe, 0 0 60px #00f2fe;
+  }
+}
+
+#chatWindow {
+  width: 350px;
+  height: 450px;
+  background: #0a0f1f;
+  color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 0 40px 8px #00f2fe;
+  border: 1px solid rgba(0, 255, 255, 0.25);
+  overflow: hidden;
+  position: absolute;
+  bottom: 70px;
+  /* Position above the toggle button */
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease-in-out;
+}
+
+.chat-closed {
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
+  pointer-events: none;
+}
+
+#chatHeader {
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  padding: 12px;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 0 20px #00f2fe;
+  color: #000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#chatHeader button {
+  border: none;
+  background: transparent;
+  color: #000;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+#chatMessages {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #0a0f1f;
+}
+
+/* Custom Scrollbar for messages */
+#chatMessages::-webkit-scrollbar {
+  width: 6px;
+}
+
+#chatMessages::-webkit-scrollbar-thumb {
+  background-color: #00f2fe;
+  border-radius: 10px;
+}
+
+.message {
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 80%;
+  line-height: 1.4;
+}
+
+.user {
+  background: #4facfe;
+  color: #000;
+  align-self: flex-end;
+  box-shadow: 0 0 10px #4facfe88;
+}
+
+.ai {
+  background: #131c31;
+  color: #00ffe0;
+  align-self: flex-start;
+  border: 1px solid #00ffe055;
+  box-shadow: 0 0 10px #00ffe033;
+}
+
+#chatInputArea {
+  display: flex;
+  padding: 8px;
+  background: rgba(0, 0, 20, 0.7);
+  border-top: 1px solid #00f2fe;
+}
+
+#chatInput {
+  flex: 1;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  background: #0d1530;
+  color: #fff;
+  font-size: 0.9em;
+  outline: none;
+  box-shadow: 0 0 6px #00f2fe inset;
+}
+
+#sendBtn {
+  margin-left: 6px;
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 15px #00f2fe;
+}
+
+/* ===== TESTIMONIALS SECTION ===== */
+#testimonials {
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  text-align: center;
+}
+
+#testimonials h2 {
+  font-size: 2.5em;
+  color: #00ffe0;
+  margin-bottom: 40px;
+  text-shadow: 0 0 10px #00ffe0;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.testimonial-card {
+  background: #131c31;
+  border: 1px solid #00ffe055;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 0 20px #00ffe033;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 30px #00ffe066;
+}
+
+.testimonial-card p {
+  font-size: 1.1em;
+  color: #e2e8f0;
+  margin-bottom: 15px;
+  font-style: italic;
+}
+
+.testimonial-card cite {
+  font-size: 1em;
+  color: #00ffe0;
+  font-weight: bold;
+}
+
+/* ===== CONNECTOR CARD STYLES ===== */
+.connector-card {
+  background: #131c31;
+  border: 1px solid #00ffe055;
+  border-radius: 15px;
+  padding: 30px;
+  max-width: 500px;
+  margin: 50px auto;
+  text-align: center;
+  box-shadow: 0 0 20px #00ffe033;
+}
+
+.connector-card h2 {
+  color: #00ffe0;
+  margin-bottom: 20px;
+}
+
+.connector-card button {
+  margin: 10px;
+  padding: 12px 24px;
+  background: linear-gradient(90deg, #00ffe0, #007bff);
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00ffe0;
+  transition: all 0.3s ease;
+}
+
+.connector-card button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #007bff, #00ffe0);
+}
+
+.connector-card p {
+  color: #00ffe0;
+  margin: 10px 0;
+  font-family: monospace;
+}
+
+.connector-card .error {
+  color: #ff6b6b;
+}

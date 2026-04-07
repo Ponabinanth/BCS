@@ -1,0 +1,7 @@
+- [x] Update requirements.txt to use mysql-connector-python instead of pymongo
+- [x] Modify react-app/backend/app.py to use MySQL for database operations
+- [x] Install MySQL Community Server on Windows (via winget)
+- [x] Start MySQL service locally
+- [x] Install Python dependencies
+- [x] Run the Flask app
+- [x] Test the /api/devices endpoint to verify MySQL integration

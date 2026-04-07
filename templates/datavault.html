@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureChain | Blockchain Vault</title>
+    <link rel="stylesheet" href="../style.css"> 
+    <style>
+        body {
+            background-color: #0d0d2b; /* Match dark theme background */
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding-top: 80px; /* Space for the fixed header/navbar */
+            text-align: center;
+        }
+        .vault-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 40px;
+            border-radius: 16px;
+            background: #181a2b;
+            box-shadow: 0 0 32px 8px rgba(0, 242, 254, 0.4);
+        }
+        .vault-input, .vault-file-upload {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 1px solid #4facfe;
+            background-color: #0d0d2b;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .vault-file-upload {
+            cursor: pointer;
+        }
+        .vault-btn {
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            color: #181a2b;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .vault-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            background-color: #282c44;
+            color: #00f2fe;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="vault-container">
+        <h2>☁️ SecureChain Blockchain Vault</h2>
+        <p>Decentralized, Quantum-Encrypted Storage for Critical Assets.</p>
+        
+        <div id="upload-section">
+            <h3>Upload Data</h3>
+            <p>Your data will be encrypted, sharded, and recorded on the immutable ledger.</p>
+            <input type="file" class="vault-file-upload" id="fileToUpload">
+            <button class="vault-btn" onclick="startUpload()">Upload & Secure</button>
+        </div>
+        
+        <hr style="border-color:#4facfe; margin: 40px 0;">
+
+        <div id="retrieve-section">
+            <h3>Retrieve Data</h3>
+            <p>Enter your file's unique ID to retrieve and decrypt your data.</p>
+            <input type="text" class="vault-input" placeholder="Enter Blockchain File ID (e.g., VAULT-293741)" id="fileId">
+            <button class="vault-btn" onclick="startRetrieve()">Retrieve & Decrypt</button>
+        </div>
+
+        <div class="vault-status" id="vaultStatus">Awaiting action...</div>
+
+    </div>
+
+    <script>
+        function startUpload() {
+            const fileInput = document.getElementById('fileToUpload');
+            const statusEl = document.getElementById('vaultStatus');
+            if (fileInput.files.length === 0) {
+                statusEl.innerHTML = "❌ Please select a file to upload.";
+                return;
+            }
+
+            statusEl.innerHTML = "⏳ Initiating upload...<br>1. Encrypting data with Quantum Module...";
+            
+            setTimeout(() => {
+                statusEl.innerHTML = "⏳ Uploading...<br>2. Sharding and distributing data across 100+ nodes...";
+                setTimeout(() => {
+                    const fileId = 'VAULT-' + Math.floor(Math.random() * 900000 + 100000);
+                    statusEl.innerHTML = `✅ **Success!** Data secured.<br>3. Blockchain Record Sealed.<br>Your File ID: <strong>${fileId}</strong>. Store this safely.`;
+                }, 3000); // Simulated network time
+            }, 1500); // Simulated encryption time
+        }
+
+        function startRetrieve() {
+            const fileId = document.getElementById('fileId').value.trim();
+            const statusEl = document.getElementById('vaultStatus');
+            if (fileId.length < 10) {
+                 statusEl.innerHTML = "❌ Please enter a valid File ID.";
+                 return;
+            }
+
+            statusEl.innerHTML = "⏳ Retrieving shards from decentralized network...";
+            setTimeout(() => {
+                statusEl.innerHTML = "⏳ Retrieving...<br>1. Reassembling data and verifying blockchain hash...";
+                setTimeout(() => {
+                    // Simulate a small chance of corruption for drama
+                    if (Math.random() < 0.05) {
+                        statusEl.innerHTML = "⚠️ **Integrity Check Failed.** Data hash mismatch. The data may have been corrupted or tampered with!";
+                    } else {
+                        statusEl.innerHTML = "✅ **Decryption Complete.** Data retrieved and verified successfully.<br>2. Download starting...";
+                        // In a real app, this would trigger a file download
+                    }
+                }, 3000);
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "threat_type": "DDoS Attack",
+    "severity": "high",
+    "description": "Distributed Denial of Service attack detected",
+    "detected_at": "2025-11-24T23:38:35.602732",
+    "resolved": false
+  },
+  {
+    "id": 2,
+    "threat_type": "Phishing Attempt",
+    "severity": "medium",
+    "description": "Suspicious email detected",
+    "detected_at": "2025-11-24T23:38:35.602774",
+    "resolved": true
+  }
+]

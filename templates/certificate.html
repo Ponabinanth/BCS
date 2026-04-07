@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Certificate - SecureChain</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .certificate-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            text-align: center;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .download-btn {
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 20px 0;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .download-btn:hover {
+            background: #0056b3;
+        }
+        
+        .certificate-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <!-- Your existing navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">SecureChain</div>
+            <div class="nav-links">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/threatscan">Threat Scan</a>
+                <a href="/certificate" class="active">Certificate</a>
+                <a href="/api/logout" onclick="event.preventDefault(); logout();">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="certificate-container">
+        <h1>🔐 Download Security Certificate</h1>
+        <p>Generate and download a SSL/TLS certificate for your SecureChain services.</p>
+        
+        <div class="certificate-info">
+            <h3>Certificate Details:</h3>
+            <ul>
+                <li><strong>Type:</strong> X.509 Certificate</li>
+                <li><strong>Algorithm:</strong> RSA 2048-bit</li>
+                <li><strong>Validity:</strong> 365 days</li>
+                <li><strong>Organization:</strong> SecureChain</li>
+                <li><strong>Format:</strong> PEM file</li>
+            </ul>
+        </div>
+
+        <button onclick="downloadCertificate()" class="download-btn">
+            📥 Download Certificate Now
+        </button>
+        
+        <p class="text-muted">Click the button above to immediately download your certificate file.</p>
+    </div>
+
+    <script>
+        // Download certificate function
+        async function downloadCertificate() {
+            try {
+                const response = await fetch('/api/download-certificate', {
+                    method: 'GET',
+                    credentials: 'include'  // Include cookies for authentication
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'securechain_certificate.pem';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                alert('Certificate downloaded successfully!');
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Failed to download certificate. Please make sure you are logged in.');
+            }
+        }
+
+        // Your existing logout function
+        async function logout() {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/';
+            }
+        }
+    </script>
+</body>
+</html>

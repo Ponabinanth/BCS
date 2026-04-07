@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced IoT Registration - SecureChain Registrar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables */
+        :root {
+            --color-primary: #00e6e6; /* Aqua/Cyan */
+            --color-secondary: #008080; /* Darker Aqua */
+            --color-bg-dark: #0a0f1c;
+            --color-bg-card: #001a1a;
+            --color-success: #00ff00;
+            --color-error: #ff5555;
+            --color-text: #e0f7fa;
+            --font-main: 'Inter', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: var(--font-main);
+            background: var(--color-bg-dark);
+            color: var(--color-text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        @media (min-width: 900px) {
+            .container {
+                grid-template-columns: 2fr 3fr;
+            }
+        }
+
+        .card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-secondary);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 230, 230, 0.2);
+        }
+
+        h1, h2 {
+            color: var(--color-primary);
+            font-weight: 700;
+            margin-top: 0;
+            border-bottom: 2px solid var(--color-secondary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* --- Form Styles --- */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--color-text);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--color-secondary);
+            background: #002b2b;
+            color: var(--color-text);
+            box-sizing: border-box;
+            font-family: var(--font-mono);
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: var(--color-primary);
+            color: var(--color-bg-dark);
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            margin-top: 15px;
+        }
+
+        .btn-register:hover {
+            background: #00ffff;
+            transform: translateY(-1px);
+        }
+
+        /* --- List/Table Styles --- */
+        #searchBox {
+            margin-bottom: 15px;
+        }
+        
+        #searchBox input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--color-secondary);
+            background: #002b2b;
+            color: var(--color-text);
+            box-sizing: border-box;
+        }
+
+        .device-list-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .device-list-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .device-list-container::-webkit-scrollbar-thumb {
+            background: var(--color-secondary);
+            border-radius: 4px;
+        }
+
+        #devicesTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            font-family: var(--font-mono);
+        }
+
+        #devicesTable th, #devicesTable td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid #003333;
+        }
+
+        #devicesTable th {
+            color: var(--color-primary);
+            cursor: pointer;
+            position: sticky;
+            top: 0;
+            background: var(--color-bg-card);
+            z-index: 10;
+        }
+
+        #devicesTable th:hover {
+            background: #002b2b;
+        }
+        
+        /* --- Status & Alerts --- */
+        #statusMessage {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status-success {
+            background: rgba(0, 255, 0, 0.1);
+            border-left: 5px solid var(--color-success);
+            color: var(--color-success);
+        }
+
+        .status-error {
+            background: rgba(255, 85, 85, 0.1);
+            border-left: 5px solid var(--color-error);
+            color: var(--color-error);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        
+        <div class="card" id="registration-card">
+            <h2>⚙️ Register New IoT Device</h2>
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label for="deviceId">Device ID (Unique Blockchain Key)</label>
+                    <input type="text" id="deviceId" required readonly placeholder="Generating unique ID...">
+                </div>
+
+                <div class="form-group">
+                    <label for="deviceName">Device Name</label>
+                    <input type="text" id="deviceName" required placeholder="e.g., Smart-Thermostat-V2">
+                </div>
+
+                <div class="form-group">
+                    <label for="deviceType">Device Type</label>
+                    <select id="deviceType" required>
+                        <option value="">-- Select Type --</option>
+                        <option value="Sensor">Sensor</option>
+                        <option value="Camera">Camera</option>
+                        <option value="Gateway">Gateway</option>
+                        <option value="Lock">Smart Lock</option>
+                        <option value="Monitor">Environmental Monitor</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="initialOwner">Initial Owner Wallet Address</label>
+                    <input type="text" id="initialOwner" required placeholder="0x123...abc">
+                </div>
+
+                <button type="submit" class="btn-register">🔐 Register & Tokenize on SecureChain</button>
+            </form>
+            
+            <div id="statusMessage"></div>
+        </div>
+
+        <div class="card" id="device-list-card">
+            <h2>📋 Registered Device Log</h2>
+            
+            <div id="searchBox">
+                <input type="text" id="filterInput" placeholder="Filter devices by ID, Name, or Type..." onkeyup="renderList()">
+            </div>
+            
+            <div class="device-list-container">
+                <table id="devicesTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('deviceId')">Device ID</th>
+                            <th onclick="sortTable('deviceName')">Name</th>
+                            <th onclick="sortTable('deviceType')">Type</th>
+                            <th onclick="sortTable('registeredAt')">Registered At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'securechain_iot_devices';
+        let sortKey = 'registeredAt';
+        let sortAsc = false; // Start with descending for 'registeredAt'
+
+        function loadDevices() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        }
+
+        function saveDevices(devices) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(devices));
+        }
+
+        function generateDeviceId() {
+            const timestamp = Date.now().toString(16);
+            const random = Math.random().toString(16).substring(2, 6);
+            return `SC-${timestamp}-${random}`.toUpperCase();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('deviceId').value = generateDeviceId();
+            renderList();
+        });
+
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const deviceId = document.getElementById('deviceId').value;
+            const deviceName = document.getElementById('deviceName').value.trim();
+            const deviceType = document.getElementById('deviceType').value;
+            const initialOwner = document.getElementById('initialOwner').value.trim();
+            
+            if (!deviceName || !deviceType || !initialOwner) {
+                showMessage('Please fill in all required fields.', 'error');
+                return;
+            }
+
+            let devices = loadDevices();
+            
+            const newDevice = {
+                deviceId,
+                deviceName,
+                deviceType,
+                initialOwner,
+                registeredAt: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            };
+
+            devices.push(newDevice);
+            saveDevices(devices);
+            renderList();
+
+            // Reset form and generate new ID
+            e.target.reset();
+            document.getElementById('deviceId').value = generateDeviceId();
+            showMessage(`✅ Device '${deviceName}' successfully registered and tokenized on-chain.`, 'success');
+        });
+
+        function showMessage(message, type) {
+            const status = document.getElementById('statusMessage');
+            status.textContent = message;
+            status.className = `status-message status-${type}`;
+            status.style.display = 'block';
+
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+
+        function renderList() {
+            let devices = loadDevices();
+            const filter = document.getElementById('filterInput').value.toLowerCase();
+            
+            // 1. Sort Devices
+            devices.sort((a, b) => {
+                const aVal = a[sortKey];
+                const bVal = b[sortKey];
+                let comparison = 0;
+                
+                if (typeof aVal === 'string') {
+                    comparison = aVal.localeCompare(bVal);
+                } else {
+                    comparison = (aVal < bVal) ? -1 : (aVal > bVal) ? 1 : 0;
+                }
+                
+                return sortAsc ? comparison : comparison * -1;
+            });
+
+            // 2. Filter and Render
+            const tbody = document.querySelector('#devicesTable tbody');
+            tbody.innerHTML = '';
+
+            devices.forEach(d => {
+                const combinedText = `${d.deviceId} ${d.deviceName} ${d.deviceType}`.toLowerCase();
+                if (!filter || combinedText.includes(filter)) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${d.deviceId}</td>
+                                    <td>${d.deviceName}</td>
+                                    <td>${d.deviceType}</td>
+                                    <td>${d.registeredAt}</td>`;
+                    tbody.appendChild(tr);
+                }
+            });
+        }
+
+        function sortTable(key) {
+            if (sortKey === key) sortAsc = !sortAsc;
+            else { sortKey = key; sortAsc = true; }
+            renderList();
+        }
+
+        // Initial render
+        renderList();
+    </script>
+</body>
+
+</html>

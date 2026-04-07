@@ -1,0 +1,7 @@
+Flask>=3.0
+authlib
+eth-account
+Flask-Cors
+werkzeug
+pytest
+mysql-connector-python

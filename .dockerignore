@@ -1,0 +1,9 @@
+node_modules
+.venv
+react-app/backend/.venv
+.git
+*.pyc
+__pycache__
+uploads
+*.log
+.DS_Store

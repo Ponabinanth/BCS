@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Threat Detection - SecureChain</title>
+    <style>
+        /* Fused and Enhanced CSS for NEON/Cyber-Security Aesthetic (Consistent with other files) */
+        :root {
+            --color-bg-dark: #070a13; /* Very dark blue/black */
+            --color-bg-card: #111827; /* Darker inner card */
+            --color-primary: #00f5ff; /* Aqua/Neon accent */
+            --color-secondary: #0088cc; /* Darker blue accent */
+            --color-text: #e0e0e0;
+            --color-glow: rgba(0, 245, 255, 0.8); /* Enhanced glow effect */
+            --color-success: #39ff14; /* Neon green for success */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--color-bg-dark);
+            color: var(--color-text);
+            /* --- FONT STYLE CHANGE --- */
+            font-family: 'Inter', 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Navigation Styling */
+        nav {
+            background: #1a1a1a; 
+            padding: 15px 0;
+            text-align: center;
+            border-bottom: 3px solid var(--color-primary); /* Neon divider */
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            box-shadow: 0 0 10px rgba(0, 245, 255, 0.4); /* Subtle glow under nav */
+        }
+
+        nav a {
+            color: var(--color-primary); 
+            margin: 0 20px; 
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+            text-shadow: 0 0 5px rgba(0, 245, 255, 0.5);
+        }
+        
+        nav a:hover {
+            color: #fff;
+            text-shadow: 0 0 15px var(--color-primary);
+        }
+
+        .feature-detail {
+            max-width: 1200px;
+            width: 90%;
+            margin: 50px auto; 
+            padding: 40px;
+            text-align: center;
+            background-color: var(--color-bg-card);
+            color: var(--color-text);
+            border-radius: 15px;
+            box-shadow: 0 0 40px var(--color-glow); 
+            border-top: 3px solid var(--color-primary);
+            position: relative;
+            overflow: hidden; 
+            z-index: 2;
+        }
+
+        .feature-detail h1 {
+            font-size: 3.5rem; 
+            margin-bottom: 20px;
+            color: var(--color-primary);
+            text-shadow: 0 0 20px var(--color-glow), 0 0 5px var(--color-primary); 
+            letter-spacing: 3px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-detail p {
+            font-size: 1.25rem; 
+            line-height: 1.8;
+            color: var(--color-text); 
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px;
+            margin-top: 50px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .images-grid img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 8px; 
+            border: 2px solid var(--color-primary); 
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.6); 
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .images-grid img:hover {
+            transform: translateY(-5px) scale(1.02); 
+            box-shadow: 0 0 30px var(--color-glow);
+        }
+
+        .highlight-box {
+            margin: 40px 0; 
+            padding: 30px; 
+            background: rgba(0, 245, 255, 0.08); 
+            border-left: 6px solid var(--color-primary); 
+            border-radius: 8px;
+            text-align: left;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .highlight-box:hover {
+            background: rgba(0, 245, 255, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 0 15px var(--color-glow); 
+        }
+
+        .highlight-box h2 {
+            font-size: 1.8rem;
+            color: var(--color-primary);
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+            padding-bottom: 10px;
+            text-shadow: 0 0 8px rgba(0, 245, 255, 0.4);
+        }
+
+        .highlight-box p {
+            font-size: 1.1rem;
+            color: var(--color-text);
+            margin-bottom: 15px; 
+        }
+        
+        .highlight-box ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0 0;
+        }
+
+        .highlight-box li {
+            padding: 10px 0; 
+            font-size: 1.1rem;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+            color: var(--color-text);
+            position: relative;
+            padding-left: 20px;
+        }
+
+        /* Neon checkmark */
+        .highlight-box li::before {
+            content: '✓';
+            color: var(--color-success);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            top: 10px;
+            text-shadow: 0 0 5px var(--color-success);
+        }
+
+        .highlight-box li:last-child {
+            border-bottom: none;
+        }
+        
+        button {
+            background: var(--color-primary);
+            color: var(--color-bg-dark);
+            padding: 15px 35px; 
+            border: none;
+            border-radius: 8px; 
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 0 15px var(--color-glow); 
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        button:hover {
+            background: #4dffff;
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px var(--color-glow);
+        }
+
+        /* Style for the disabled button */
+        button[disabled] {
+            background: #333; 
+            color: #888; 
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+            opacity: 0.7;
+            border: 1px dashed var(--color-primary);
+        }
+        
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="ai.html">AI</a>
+        <a href="/iot">IoT</a>
+        <a href="encrypted.html">Storage</a> 
+        <a href="/cyber">Cyber</a>
+        <a href="/analytics">Analytics</a>
+    </nav>
+    <div class="feature-detail">
+        <h1>🤖 AI THREAT DETECTION // SECURECHAIN</h1>
+        <p>
+            **SecureChain** leverages cutting-edge **Artificial Intelligence** and **Machine Learning** models to meticulously analyze network traffic, user behavior, and system logs, detecting and neutralizing cyber threats in **real time**. Our proactive AI models are trained to predict attack vectors and provide an adaptive shield against sophisticated, evolving cyber threats.
+        </p>
+
+        <div class="highlight-box">
+            <h2>🌟 Why AI Threat Detection is Critical</h2>
+            <p>
+                Traditional cybersecurity relies on static, signature-based rules, which are easily bypassed by novel attacks. Our AI-driven approach offers **dynamic, behavioral analysis**, allowing it to spot subtle anomalies, uncover complex **insider threats**, and stop **zero-day attacks** *before* they can compromise your infrastructure.
+            </p>
+        </div>
+
+        <div class="images-grid">
+            <img src="ai1.png" alt="AI Cybersecurity Dashboard">
+            <img src="ai2.png" alt="Threat Detection System Flowchart">
+            <img src="ai3.jpg" alt="AI Malware Analysis Interface">
+            <img src="ai4.jpg" alt="Predictive Defense Model">
+        </div>
+
+        <div class="highlight-box">
+            <h2>🚀 Core Capabilities and Future Roadmap</h2>
+            <p>Our platform continuously evolves with these key features:</p>
+            <ul>
+                <li>**Predictive Threat Modeling:** Machine Learning identifies potential attack paths and vulnerabilities.</li>
+                <li>**AI-Powered Phishing & Malware Detection:** Deep analysis of content and context, not just signatures.</li>
+                <li>**Adaptive Defense Engine:** Security policies automatically evolve based on newly discovered threats.</li>
+                <li>**Real-Time Behavioral Monitoring (UEBA):** Pinpointing compromised accounts or malicious insider activity.</li>
+                <li>**Automated Incident Response (SOAR):** AI initiates containment and remediation steps autonomously.</li>
+            </ul>
+        </div>
+        
+        <div class="highlight-box">
+            <h2>🔬 Technical Deep Dive: The Model</h2>
+            <p>
+                We utilize a hybrid model incorporating **Recurrent Neural Networks (RNNs)** for sequential data analysis (network packets) and **Deep Q-Learning** for autonomous decision-making and policy adaptation. This ensures both **high-fidelity detection** and **rapid, intelligent response**.
+            </p>
+        </div>
+
+        <div class="highlight-box">
+            <h2>🧪 Interactive Demo (Coming Soon)</h2>
+            <p>Experience a real-time threat scanning simulation showcasing the AI's speed and precision in identifying simulated network anomalies.</p>
+            <button disabled>SCAN SYSTEM INITIATED</button>
+            <p style="font-size: 0.9rem; margin-top: 10px; color: #555;">*Functionality currently unavailable in beta. Access denied.</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+</html>

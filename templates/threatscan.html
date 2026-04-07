@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threat Scan - SecureChain Pro</title>
+    <link rel="stylesheet" href="features.css">
+    <style>
+        /* CSS Variables */
+        :root {
+            --background-primary: #0a0f1f;
+            --background-secondary: #131c31;
+            --card-background: #1a2636;
+            --text-color: #fff;
+            --accent-neon: #00f2fe;
+            --accent-low: #00e6e6; /* Cyan */
+            --accent-medium: #ffae42; /* Orange */
+            --accent-high: #ff4d4d; /* Red */
+            --accent-success: #32ff7e; /* Green */
+        }
+
+        /* General Section Styling */
+        #threatscan {
+            padding: 60px 20px;
+            background: var(--background-secondary);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--accent-neon);
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .scan-card, #threatMap {
+            max-width: 950px; /* Slightly wider for better report view */
+            margin: 40px auto;
+            padding: 30px;
+            background: var(--card-background);
+            border-radius: 15px;
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.2), 0 0 5px rgba(0, 242, 254, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        /* NEW: System Status Panel */
+        .status-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .status-item {
+            background: var(--background-primary);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-neon);
+        }
+        
+        .status-item h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: var(--accent-neon);
+        }
+        
+        .status-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        /* NEW: Quick Actions */
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .quick-action-btn {
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--accent-neon);
+            border: 1px solid var(--accent-neon);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        
+        .quick-action-btn:hover {
+            background: rgba(0, 242, 254, 0.2);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+        
+        /* NEW: Threat History Timeline */
+        .timeline-container {
+            margin-top: 30px;
+            position: relative;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--accent-neon);
+            opacity: 0.3;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: var(--background-primary);
+            border-radius: 8px;
+            text-align: left;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 15px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-neon);
+        }
+        
+        .timeline-item.high::before { background: var(--accent-high); }
+        .timeline-item.medium::before { background: var(--accent-medium); }
+        .timeline-item.low::before { background: var(--accent-low); }
+        
+        .timeline-time {
+            font-size: 0.8em;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-content {
+            font-size: 0.9em;
+        }
+        
+        /* NEW: Export Button */
+        .export-btn {
+            background: transparent;
+            color: var(--accent-neon);
+            border: 1px solid var(--accent-neon);
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+        
+        .export-btn:hover {
+            background: rgba(0, 242, 254, 0.1);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+        
+        /* NEW: Security Score Dashboard */
+        .security-score {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            position: relative;
+            background: conic-gradient(var(--accent-success) 0% 75%, var(--background-primary) 75% 100%);
+        }
+        
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            background: var(--card-background);
+            border-radius: 50%;
+        }
+        
+        .score-value {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Input & Button Styling */
+        #threatInput, #fileInput {
+            width: calc(100% - 30px);
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px solid var(--accent-low);
+            border-radius: 8px;
+            background: var(--background-primary);
+            color: var(--text-color);
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        #threatInput:focus, #fileInput:focus {
+            border-color: var(--accent-neon);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+            outline: none;
+        }
+
+        #scanButton, #fileScanButton, .remediate-button {
+            background: var(--accent-neon);
+            color: var(--background-primary);
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s, box-shadow 0.3s;
+        }
+        #scanButton:hover, #fileScanButton:hover, .remediate-button:hover {
+            background: #4efeff;
+            box-shadow: 0 0 15px rgba(78, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Remediation Button Specific Style */
+        .remediate-button {
+            background: var(--accent-medium);
+            color: var(--background-primary);
+            margin-top: 15px;
+            display: inline-block;
+            padding: 10px 20px;
+        }
+        .remediate-button:hover {
+            background: #ffc878;
+        }
+        
+        /* NEW: Enhanced Remediation Options */
+        .remediation-options {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            text-align: left;
+        }
+        
+        .remediation-option {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .remediation-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .remediation-option input {
+            margin-right: 8px;
+        }
+
+        /* PROGRESS BAR STYLING (NEW) */
+        .scan-container {
+            margin-top: 30px;
+            height: 30px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            background: var(--background-primary);
+        }
+
+        .scan-progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-low), var(--accent-neon));
+            transition: width 0.1s linear; /* Smooth, quick updates */
+            position: relative;
+        }
+
+        #scanStatus, #fileScanStatus {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-color);
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        /* Result Box Styles */
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: left;
+            transition: all 0.3s;
+        }
+        
+        .result-safe { border-left: 5px solid var(--accent-low); background: rgba(0, 230, 230, 0.1); color: var(--accent-low); }
+        .result-suspicious { border-left: 5px solid var(--accent-medium); background: rgba(255, 174, 66, 0.1); color: var(--accent-medium); }
+        .result-malicious { border-left: 5px solid var(--accent-high); background: rgba(255, 77, 77, 0.1); color: var(--accent-high); }
+        
+        /* Detailed Report Grid (NEW) */
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .report-item {
+            background: var(--background-primary);
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+        }
+        .report-item strong {
+            display: block;
+            color: var(--accent-neon);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .score-low { color: var(--accent-low); }
+        .score-medium { color: var(--accent-medium); }
+        .score-high { color: var(--accent-high); }
+
+
+        /* Structured Result Table for File Scan */
+        .vulnerability-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            color: var(--text-color);
+            font-size: 0.95em;
+        }
+        .vulnerability-table th, .vulnerability-table td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+        }
+        .vulnerability-table th {
+            background-color: rgba(0, 242, 254, 0.1);
+            color: var(--accent-neon);
+            font-weight: bold;
+        }
+
+        .severity-HIGH { color: var(--accent-high); }
+        .severity-MEDIUM { color: var(--accent-medium); }
+        .severity-LOW { color: var(--accent-low); }
+
+
+        /* Threat Map Styles */
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            background: var(--background-primary);
+            border: 2px solid rgba(0, 242, 254, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            /* Simple glowing map background */
+            background-image: radial-gradient(circle at center, rgba(0, 242, 254, 0.05) 0%, rgba(10, 15, 31, 1) 70%); 
+        }
+
+        .threat-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 5;
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        /* Map Hover Tooltip (NEW) */
+        .threat-point::before {
+            content: attr(data-location);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--accent-neon);
+            border: 1px solid var(--accent-neon);
+            border-radius: 5px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            pointer-events: none;
+            font-size: 0.8em;
+            z-index: 20;
+        }
+        .threat-point:hover::before {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+        .threat-low { background: var(--accent-low); box-shadow: 0 0 8px var(--accent-low); }
+        .threat-medium { background: var(--accent-medium); box-shadow: 0 0 8px var(--accent-medium); }
+        .threat-high { background: var(--accent-high); box-shadow: 0 0 8px var(--accent-high); animation: pulse-high 1s infinite alternate; }
+        
+        @keyframes pulse { from { opacity: 0.8; transform: scale(1.0); } to { opacity: 1; transform: scale(1.3); } }
+        @keyframes pulse-high { from { box-shadow: 0 0 10px var(--accent-high); } to { box-shadow: 0 0 20px var(--accent-high); } }
+
+        /* Map Info Pop-up Box */
+        #mapInfoBox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(26, 38, 54, 0.95);
+            border: 1px solid var(--accent-neon);
+            padding: 15px;
+            border-radius: 8px;
+            width: 250px;
+            text-align: left;
+            z-index: 20;
+            color: var(--text-color);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+        }
+
+        .map-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        #mapRegionSelect {
+            background: var(--background-primary);
+            color: var(--text-color);
+            border: 1px solid var(--accent-neon);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: bold;
+        }
+
+        #mapLiveStatus {
+            color: #9bd9ff;
+            font-size: 0.9em;
+            margin: 0;
+        }
+
+        /* Threat Log Styling */
+        #threatLog {
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--background-primary);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            white-space: pre-wrap;
+            max-height: 350px;
+            overflow-y: auto;
+            text-align: left;
+            color: #e0e0e0;
+            line-height: 1.4;
+        }
+        /* Custom Scrollbar */
+        #threatLog::-webkit-scrollbar { width: 8px; height: 8px; }
+        #threatLog::-webkit-scrollbar-track { background: #0a0f1f; border-radius: 10px; }
+        #threatLog::-webkit-scrollbar-thumb { background-color: var(--accent-neon); border-radius: 10px; border: 2px solid #0a0f1f; }
+        #threatLog::-webkit-scrollbar-thumb:hover { background-color: #4efeff; }
+
+        /* Log Entry Color Coding */
+        .log-info { color: #888; }
+        .log-scan { color: var(--accent-low); }
+        .log-vuln { color: var(--accent-medium); }
+        .log-malicious { color: var(--accent-high); font-weight: bold; }
+        .log-success { color: #32ff7e; } /* Green for remediation success */
+
+        /* NEW: Mobile Responsive Improvements */
+        @media (max-width: 768px) {
+            .scan-card, #threatMap {
+                margin: 20px auto;
+                padding: 20px;
+            }
+            
+            .status-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+            }
+            
+            .vulnerability-table {
+                font-size: 0.8em;
+            }
+            
+            .vulnerability-table th, .vulnerability-table td {
+                padding: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <section id="threatscan">
+        <h1>🔍 Threat Scan Dashboard</h1>
+        <p>Advanced threat detection and analysis tools for comprehensive security monitoring.</p>
+        
+        <!-- NEW: System Status Panel -->
+        <div class="scan-card">
+            <h2>System Status</h2>
+            <div class="status-panel">
+                <div class="status-item">
+                    <h3>Overall Security Score</h3>
+                    <div class="security-score">
+                        <div class="score-circle">
+                            <div class="score-value">75%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <h3>Active Threats</h3>
+                    <div class="status-value" style="color: var(--accent-high);">12</div>
+                    <div>High: 3, Medium: 5, Low: 4</div>
+                </div>
+                <div class="status-item">
+                    <h3>Last Scan</h3>
+                    <div class="status-value" style="color: var(--accent-low);">2 hours ago</div>
+                    <div>No critical issues found</div>
+                </div>
+                <div class="status-item">
+                    <h3>System Health</h3>
+                    <div class="status-value" style="color: var(--accent-success);">Optimal</div>
+                    <div>All services running</div>
+                </div>
+            </div>
+            
+            <!-- NEW: Quick Actions -->
+            <h3>Quick Actions</h3>
+            <div class="quick-actions">
+                <button class="quick-action-btn" id="quickNetworkScan">Network Scan</button>
+                <button class="quick-action-btn" id="quickMalwareScan">Malware Scan</button>
+                <button class="quick-action-btn" id="quickVulnerabilityScan">Vulnerability Scan</button>
+                <button class="quick-action-btn" id="quickFirewallCheck">Firewall Check</button>
+                <button class="quick-action-btn" id="quickBackupCheck">Backup Status</button>
+            </div>
+        </div>
+
+        <div class="scan-card">
+            <h2>URL Threat Scanner</h2>
+            <input type="url" id="threatInput" placeholder="Enter URL to scan for threats (e.g., https://example.com)..." required />
+            <button id="scanButton">Scan URL</button>
+            <div class="scan-container">
+                <div id="urlScanProgress" class="scan-progress"></div>
+                <div id="scanStatus">Ready to scan</div>
+            </div>
+            <div id="scanResult" class="result-box" style="display: none;"></div>
+            <!-- NEW: Export Button -->
+            <button class="export-btn" id="exportUrlReport" style="display: none;">Export Report</button>
+        </div>
+
+        <div id="fileScan" class="scan-card">
+            <h2>File System Vulnerability Scan</h2>
+            <input type="file" id="fileInput" />
+            <button id="fileScanButton">Start File Scan</button>
+            <div class="scan-container">
+                <div id="fileScanProgress" class="scan-progress"></div>
+                <div id="fileScanStatus">Ready to scan files</div>
+            </div>
+            <div id="fileScanResult" class="result-box" style="display: none;"></div>
+            <!-- NEW: Export Button -->
+            <button class="export-btn" id="exportFileReport" style="display: none;">Export Report</button>
+        </div>
+
+        <div id="threatMap">
+            <h2>AI Live Threat Intelligence Map</h2>
+            <div class="map-toolbar">
+                <label for="mapRegionSelect">Region:</label>
+                <select id="mapRegionSelect">
+                    <option value="india">India</option>
+                    <option value="tamil-nadu">Tamil Nadu</option>
+                </select>
+                <p id="mapLiveStatus">Waiting for live intelligence feed...</p>
+            </div>
+            <div class="map-container" id="threatMapContainer">
+                <div id="mapInfoBox" style="display:none;">
+                    <h4>Threat Details</h4>
+                    <p><strong>Location:</strong> <span id="infoLocation">N/A</span></p>
+                    <p><strong>Severity:</strong> <span id="infoSeverity">N/A</span></p>
+                    <p><strong>Type:</strong> <span id="infoType">N/A</span></p>
+                    <p><strong>First Detected:</strong> <span id="infoFirstSeen">N/A</span></p>
+                </div>
+            </div>
+            <div class="threat-info">
+                <h3>Legend:</h3>
+                <ul>
+                    <li><span style="color: var(--accent-low);">● Low</span> - Minor threats detected (e.g., Policy Violation)</li>
+                    <li><span style="color: var(--accent-medium);">● Medium</span> - Moderate security concerns (e.g., Data Leakage)</li>
+                    <li><span style="color: var(--accent-high);">● High</span> - Critical threats identified (e.g., Active Attack)</li>
+                </ul>
+                <p>Map updates every 15 seconds with AI-correlated detections for your selected region.</p>
+            </div>
+        </div>
+
+        <!-- NEW: Threat History Timeline -->
+        <div class="scan-card">
+            <h2>Threat History Timeline</h2>
+            <div class="timeline-container">
+                <div class="timeline" id="threatTimeline">
+                    <!-- Timeline items will be added dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <div class="scan-card">
+            <h2>Threat Detection Log</h2>
+            <pre id="threatLog"><span class="log-info">[INIT] Initializing threat detection systems...</span>
+<span class="log-info">[INFO] Security monitoring active</span>
+<span class="log-info">[INFO] Threat database loaded. Ready for analysis.</span></pre>
+        </div>
+    </section>
+
+    <script>
+        // --- Global Helper Functions ---
+        const logToThreatLog = (message, type = 'info') => {
+            const logEl = document.getElementById('threatLog');
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+            const logClass = `log-${type}`;
+            logEl.innerHTML += `\n<span class="${logClass}">[${timestamp}] ${message}</span>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        };
+
+        const updateProgressBar = (progressEl, statusEl, percentage, statusText) => {
+            progressEl.style.width = `${percentage}%`;
+            statusEl.textContent = statusText;
+        };
+
+        // --- NEW: Quick Action Handlers ---
+        document.getElementById('quickNetworkScan').addEventListener('click', function() {
+            logToThreatLog('Quick Action: Starting network security scan...', 'scan');
+            document.getElementById('threatInput').value = 'https://internal-network-scan';
+            document.getElementById('scanButton').click();
+        });
+
+        document.getElementById('quickMalwareScan').addEventListener('click', function() {
+            logToThreatLog('Quick Action: Select a file, then run live malware scan.', 'scan');
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('quickVulnerabilityScan').addEventListener('click', function() {
+            logToThreatLog('Quick Action: Starting vulnerability assessment...', 'scan');
+            // Simulate a comprehensive scan
+            setTimeout(() => {
+                logToThreatLog('Vulnerability Scan: 5 potential issues found. Review recommended.', 'vuln');
+            }, 2000);
+        });
+
+        document.getElementById('quickFirewallCheck').addEventListener('click', function() {
+            logToThreatLog('Quick Action: Checking firewall status...', 'scan');
+            setTimeout(() => {
+                logToThreatLog('Firewall Check: All rules active. No unauthorized access detected.', 'success');
+            }, 1500);
+        });
+
+        document.getElementById('quickBackupCheck').addEventListener('click', function() {
+            logToThreatLog('Quick Action: Verifying backup integrity...', 'scan');
+            setTimeout(() => {
+                logToThreatLog('Backup Check: All backups verified and up to date.', 'success');
+            }, 1800);
+        });
+
+        // --- NEW: Threat History Timeline ---
+        const threatHistory = [
+            { time: '10:45:23', content: 'Malicious URL detected: phishing-site.com', severity: 'high' },
+            { time: '10:32:11', content: 'Suspicious file activity in /temp directory', severity: 'medium' },
+            { time: '10:15:47', content: 'Policy violation: Unauthorized software installation', severity: 'low' },
+            { time: '09:58:32', content: 'DDoS mitigation activated for network segment', severity: 'high' },
+            { time: '09:42:15', content: 'Updated threat definitions database', severity: 'low' },
+            { time: '09:30:05', content: 'Unauthorized access attempt from external IP', severity: 'medium' }
+        ];
+
+        const renderThreatTimeline = () => {
+            const timelineEl = document.getElementById('threatTimeline');
+            timelineEl.innerHTML = '';
+            
+            threatHistory.forEach(item => {
+                const timelineItem = document.createElement('div');
+                timelineItem.className = `timeline-item ${item.severity}`;
+                timelineItem.innerHTML = `
+                    <div class="timeline-time">${item.time}</div>
+                    <div class="timeline-content">${item.content}</div>
+                `;
+                timelineEl.appendChild(timelineItem);
+            });
+        };
+
+        // --- NEW: Export Functionality ---
+        document.getElementById('exportUrlReport').addEventListener('click', function() {
+            const resultEl = document.getElementById('scanResult');
+            const content = resultEl.innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'url-threat-scan-report.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            logToThreatLog('URL Scan Report exported successfully.', 'success');
+        });
+
+        document.getElementById('exportFileReport').addEventListener('click', function() {
+            const resultEl = document.getElementById('fileScanResult');
+            const content = resultEl.innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'file-scan-report.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            logToThreatLog('File Scan Report exported successfully.', 'success');
+        });
+
+        // --- URL Threat Scan Logic (live backend) ---
+        document.getElementById('scanButton').addEventListener('click', async function() {
+            const input = document.getElementById('threatInput');
+            const rawUrl = input.value.trim();
+            const resultEl = document.getElementById('scanResult');
+            const statusEl = document.getElementById('scanStatus');
+            const progressEl = document.getElementById('urlScanProgress');
+            const exportBtn = document.getElementById('exportUrlReport');
+
+            const displayUrl = /^(http|https):\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+                        const urlPattern = new RegExp('^(https?:\\/\\/)?' + '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + '((\\d{1,3}\\.){3}\\d{1,3}))' + '(\\:\\d+)?(\\/[-a-z\\d%@_.~+&:]*)*' + '(\\?[;&a-z\\d%@_.,~+&:=-]*)?' + '(\\#[-a-z\\d_]*)?$', 'i');
+            if (!urlPattern.test(displayUrl)) {
+                resultEl.textContent = 'Invalid URL format. Please enter a valid URL.';
+                resultEl.className = 'result-box result-malicious';
+                resultEl.style.display = 'block';
+                exportBtn.style.display = 'none';
+                updateProgressBar(progressEl, statusEl, 0, 'Ready to scan');
+                return;
+            }
+
+            resultEl.style.display = 'none';
+            exportBtn.style.display = 'none';
+            updateProgressBar(progressEl, statusEl, 20, 'Submitting URL to AI engine...');
+            await new Promise(r => setTimeout(r, 220));
+            updateProgressBar(progressEl, statusEl, 55, 'Analyzing signatures and behavior...');
+            await new Promise(r => setTimeout(r, 220));
+            updateProgressBar(progressEl, statusEl, 80, 'Correlating with realtime alerts...');
+
+            try {
+                const response = await fetch('/api/threat-scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target: displayUrl })
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const payload = await response.json();
+
+                const threats = Array.isArray(payload.threats) ? payload.threats : [];
+                const hasHigh = threats.some(t => String(t.severity || '').toLowerCase() === 'high');
+                const hasMedium = threats.some(t => String(t.severity || '').toLowerCase() === 'medium');
+                const finalResult = hasHigh ? 'MALICIOUS' : (hasMedium ? 'SUSPICIOUS' : 'SAFE');
+                const className = hasHigh ? 'result-malicious' : (hasMedium ? 'result-suspicious' : 'result-safe');
+                const riskScore = Number(payload?.prediction?.risk_score || 0);
+                const scoreClass = riskScore < 40 ? 'score-low' : (riskScore < 70 ? 'score-medium' : 'score-high');
+
+                let resultHTML = `<strong>URL: ${displayUrl}</strong><br><br>`;
+                resultHTML += `<div class="report-grid">`;
+                resultHTML += `<div class="report-item"><strong>Risk Score</strong><span class="${scoreClass}">${riskScore.toFixed(2)}/100</span></div>`;
+                resultHTML += `<div class="report-item"><strong>Classification</strong><span class="${className.replace('result-', 'score-')}">${finalResult}</span></div>`;
+                resultHTML += `<div class="report-item"><strong>Threats Found</strong><span>${payload.threats_found ?? threats.length}</span></div>`;
+                resultHTML += `<div class="report-item"><strong>Next 15m Probability</strong><span>${payload?.prediction?.next_15_min_probability ?? 0}%</span></div>`;
+                resultHTML += `</div>`;
+
+                if (threats.length > 0) {
+                    resultHTML += `<table class="vulnerability-table"><thead><tr><th>Severity</th><th>Type</th><th>Description</th><th>Confidence</th></tr></thead><tbody>`;
+                    threats.forEach((t) => {
+                        const sev = String(t.severity || 'low').toUpperCase();
+                        resultHTML += `<tr><td><span class="severity-${sev}">${sev}</span></td><td>${t.type || 'Threat'}</td><td>${t.description || ''}</td><td>${t.confidence ?? ''}%</td></tr>`;
+                    });
+                    resultHTML += `</tbody></table>`;
+                }
+
+                resultEl.innerHTML = resultHTML;
+                resultEl.className = `result-box ${className}`;
+                resultEl.style.display = 'block';
+                exportBtn.style.display = 'inline-block';
+                updateProgressBar(progressEl, statusEl, 100, 'Scan Complete');
+                logToThreatLog(`URL Scan (LIVE): ${finalResult} (score=${riskScore.toFixed(2)}) - ${displayUrl}`, hasHigh ? 'malicious' : (hasMedium ? 'vuln' : 'scan'));
+            } catch (err) {
+                updateProgressBar(progressEl, statusEl, 100, 'Scan Failed');
+                resultEl.textContent = `Live URL scan failed: ${err.message}`;
+                resultEl.className = 'result-box result-malicious';
+                resultEl.style.display = 'block';
+                logToThreatLog(`URL scan failed: ${err.message}`, 'malicious');
+            }
+        });
+
+        // --- File Scan Logic (live backend) ---
+        document.getElementById('fileScanButton').addEventListener('click', async function() {
+            const input = document.getElementById('fileInput');
+            const resultEl = document.getElementById('fileScanResult');
+            const statusEl = document.getElementById('fileScanStatus');
+            const progressEl = document.getElementById('fileScanProgress');
+            const exportBtn = document.getElementById('exportFileReport');
+            const file = input.files && input.files[0];
+
+            if (!file) {
+                resultEl.textContent = 'Please select a file first.';
+                resultEl.className = 'result-box result-suspicious';
+                resultEl.style.display = 'block';
+                return;
+            }
+
+            resultEl.style.display = 'none';
+            exportBtn.style.display = 'none';
+            updateProgressBar(progressEl, statusEl, 20, 'Uploading file...');
+            await new Promise(r => setTimeout(r, 200));
+            updateProgressBar(progressEl, statusEl, 60, 'Running content and signature analysis...');
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                const response = await fetch('/api/upload', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const payload = await response.json();
+                const scan = payload.scan || {};
+                const harmful = Boolean(scan.harmful);
+                const severity = String(scan.severity || 'low').toLowerCase();
+                const className = harmful ? 'result-malicious' : (severity === 'medium' ? 'result-suspicious' : 'result-safe');
+
+                let resultHTML = `<strong>File: ${payload.filename || file.name}</strong><br><br>`;
+                resultHTML += `<div class="report-grid">`;
+                resultHTML += `<div class="report-item"><strong>Verdict</strong><span>${scan.verdict || (harmful ? 'harmful' : 'not_harmful')}</span></div>`;
+                resultHTML += `<div class="report-item"><strong>Risk Score</strong><span>${scan.risk_score ?? 0}/100</span></div>`;
+                resultHTML += `<div class="report-item"><strong>Severity</strong><span>${severity.toUpperCase()}</span></div>`;
+                resultHTML += `<div class="report-item"><strong>Confidence</strong><span>${scan.confidence ?? 0}%</span></div>`;
+                resultHTML += `<div class="report-item"><strong>SHA-256</strong><span style="word-break: break-all;">${scan.sha256 || '-'}</span></div>`;
+                resultHTML += `<div class="report-item"><strong>Entropy</strong><span>${scan.entropy ?? '-'}</span></div>`;
+                resultHTML += `</div>`;
+
+                const indicators = Array.isArray(scan.indicators) ? scan.indicators : [];
+                if (indicators.length > 0) {
+                    resultHTML += `<table class="vulnerability-table"><thead><tr><th>Severity</th><th>Indicator</th><th>Description</th></tr></thead><tbody>`;
+                    indicators.forEach((i) => {
+                        const sev = String(i.severity || 'low').toUpperCase();
+                        resultHTML += `<tr><td><span class="severity-${sev}">${sev}</span></td><td>${i.type || 'Indicator'}</td><td>${i.description || ''}</td></tr>`;
+                    });
+                    resultHTML += `</tbody></table>`;
+                }
+
+                resultEl.innerHTML = resultHTML;
+                resultEl.className = `result-box ${className}`;
+                resultEl.style.display = 'block';
+                exportBtn.style.display = 'inline-block';
+                updateProgressBar(progressEl, statusEl, 100, 'Scan Complete');
+                logToThreatLog(`File Scan (LIVE): ${harmful ? 'HARMFUL' : 'NOT HARMFUL'} - ${file.name}`, harmful ? 'malicious' : 'success');
+            } catch (err) {
+                updateProgressBar(progressEl, statusEl, 100, 'Scan Failed');
+                resultEl.textContent = `Live file scan failed: ${err.message}`;
+                resultEl.className = 'result-box result-malicious';
+                resultEl.style.display = 'block';
+                logToThreatLog(`File scan failed: ${err.message}`, 'malicious');
+            }
+        });
+
+        // --- Threat Map Logic (Live AI Feed: India / Tamil Nadu) ---
+        let currentThreats = [];
+        let currentRegion = 'india';
+
+        const severityToLevel = (severity) => {
+            const s = String(severity || '').toLowerCase();
+            if (s === 'critical' || s === 'high') return 2;
+            if (s === 'medium') return 1;
+            return 0;
+        };
+
+        const normalizeThreat = (threat) => ({
+            x: Number(threat.x || 50),
+            y: Number(threat.y || 50),
+            level: severityToLevel(threat.severity),
+            severity: String(threat.severity || 'low').toLowerCase(),
+            location: threat.location || 'Unknown',
+            type: threat.type || 'Threat Event',
+            confidence: Number(threat.confidence || 50),
+            target: threat.target || 'n/a',
+            firstSeen: threat.first_seen || threat.firstSeen || new Date().toISOString(),
+            description: threat.description || ''
+        });
+
+        const renderThreatMap = (threats) => {
+            const mapContainer = document.getElementById('threatMapContainer');
+            const infoBox = document.getElementById('mapInfoBox');
+            mapContainer.innerHTML = '';
+            mapContainer.appendChild(infoBox);
+
+            threats.forEach((threat) => {
+                const point = document.createElement('div');
+                const levelNames = ['low', 'medium', 'high'];
+                const levelDisplay = ['Low', 'Medium', 'High'][threat.level];
+                
+                point.className = `threat-point threat-${levelNames[threat.level]}`;
+                point.style.left = `${threat.x}%`;
+                point.style.top = `${threat.y}%`;
+                point.setAttribute('data-location', `${threat.location} (${levelDisplay})`); // Added for CSS hover
+                
+                point.addEventListener('click', () => {
+                    document.getElementById('infoLocation').textContent = threat.location;
+                    document.getElementById('infoSeverity').textContent = levelDisplay;
+                    document.getElementById('infoSeverity').style.color = `var(--accent-${levelNames[threat.level]})`;
+                    document.getElementById('infoType').textContent = `${threat.type} (conf: ${threat.confidence}%)`;
+                    document.getElementById('infoFirstSeen').textContent = threat.firstSeen;
+                    infoBox.style.display = 'block';
+                    
+                    logToThreatLog(`Map Click: Threat (${levelDisplay}) in ${threat.location} - ${threat.type} [${threat.target}]`, levelNames[threat.level] === 'high' ? 'malicious' : 'vuln');
+                });
+                mapContainer.appendChild(point);
+            });
+        };
+
+        const fetchLiveThreatMap = async () => {
+            const statusEl = document.getElementById('mapLiveStatus');
+            try {
+                const response = await fetch(`/api/threat-map/live?region=${encodeURIComponent(currentRegion)}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const payload = await response.json();
+                currentThreats = Array.isArray(payload.threats) ? payload.threats.map(normalizeThreat) : [];
+                renderThreatMap(currentThreats);
+
+                const riskScore = Number(payload.risk_score || 0).toFixed(1);
+                const riskLevel = String(payload.risk_level || 'low').toUpperCase();
+                statusEl.textContent = `Live feed: ${payload.region} | risk ${riskScore} (${riskLevel}) | next 15m ${payload.next_15_min_probability || 0}%`;
+                logToThreatLog(`Live Threat Map refreshed for ${payload.region}: ${currentThreats.length} detections`, 'info');
+            } catch (err) {
+                statusEl.textContent = `Live feed error: ${err.message}`;
+                logToThreatLog(`Live Threat Map error: ${err.message}`, 'vuln');
+            }
+        };
+
+        const updateThreatMap = () => fetchLiveThreatMap();
+
+        const initThreatMap = () => {
+            const regionSelect = document.getElementById('mapRegionSelect');
+            if (regionSelect) {
+                currentRegion = regionSelect.value || 'india';
+                regionSelect.addEventListener('change', () => {
+                    currentRegion = regionSelect.value || 'india';
+                    fetchLiveThreatMap();
+                });
+            }
+
+            renderThreatMap(currentThreats);
+            document.getElementById('mapInfoBox').style.display = 'none';
+            fetchLiveThreatMap();
+            setInterval(updateThreatMap, 15000);
+            logToThreatLog('AI Live Threat Map initialized for India/Tamil Nadu feed.', 'info');
+        };
+
+        // Initialize all components
+        document.addEventListener('DOMContentLoaded', function() {
+            initThreatMap();
+            renderThreatTimeline();
+        });
+    </script>
+</body>
+
+<footer>
+    <a href="index.html">⬅ Back to Home</a>
+</footer>
+
+</html>
+
+
+

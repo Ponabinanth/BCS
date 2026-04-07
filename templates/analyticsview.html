@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureChain Analytics</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analytics-card {
+            background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+            border: 1px solid #21262d;
+            border-radius: 1rem;
+            box-shadow: 0 0 40px #00f2fe;
+            color: #c9d1d9;
+            padding: 2rem;
+        }
+
+        .stat-card {
+            background-color: #161b22;
+            border: 1px solid #21262d;
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.02);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+        }
+    </style>
+</head>
+
+<body class="bg-[#0d1117] text-[#c9d1d9] font-sans p-8">
+
+    <div id="analytics-container" class="analytics-card w-full max-w-4xl mx-auto">
+        <h2 class="text-4xl font-bold text-[#58a6ff] mb-6">📊 Security Analytics</h2>
+        <p class="text-sm text-[#8b949e] mb-8">
+            Real-time security analytics and insights for all registered IoT devices.
+            Data is securely stored and validated on the blockchain.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card">
+                <div id="total-devices" class="text-3xl font-bold text-[#58a6ff]">0</div>
+                <div class="text-sm text-[#8b949e]">Total Devices</div>
+            </div>
+            <div class="stat-card">
+                <div id="secure-devices" class="text-3xl font-bold text-[#7ee787]">0</div>
+                <div class="text-sm text-[#8b949e]">Secure Devices</div>
+            </div>
+            <div class="stat-card">
+                <div id="at-risk-devices" class="text-3xl font-bold text-[#d2a8ff]">0</div>
+                <div class="text-sm text-[#8b949e]">At-Risk Devices</div>
+            </div>
+            <div class="stat-card">
+                <div id="vulnerabilities" class="text-3xl font-bold text-[#e1684c]">0</div>
+                <div class="text-sm text-[#8b949e]">Vulnerabilities Found</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-[#161b22] p-6 rounded-lg border border-[#21262d]">
+                <h3 class="text-xl font-semibold mb-4 text-[#c9d1d9]">Threat Distribution</h3>
+                <div class="chart-container">
+                    <canvas id="threatDistributionChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-[#161b22] p-6 rounded-lg border border-[#21262d]">
+                <h3 class="text-xl font-semibold mb-4 text-[#c9d1d9]">Threats Detected Over Time</h3>
+                <div class="chart-container">
+                    <canvas id="threatTimelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-[#161b22] p-6 rounded-lg border border-[#21262d]">
+            <h3 class="text-xl font-semibold mb-4 text-[#c9d1d9]">Live Security Log</h3>
+            <div id="security-log"
+                class="h-64 overflow-y-scroll text-xs p-4 bg-gray-900 rounded-lg font-mono leading-relaxed">
+                <p class="text-green-400">✅ 10:30:22 - Blockchain validation successful for device 'IoT-Thermostat-23'.
+                </p>
+                <p class="text-yellow-400">⚠️ 10:29:15 - Anomaly detected from device 'Smart-Lock-44'. Investigating...
+                </p>
+                <p class="text-red-400">🚨 10:28:40 - Critical vulnerability found in 'Legacy-Gateway-01'. Severity:
+                    High.</p>
+                <p class="text-green-400">✅ 10:27:55 - New device 'Security-Camera-12' successfully registered.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Function to generate random data for demonstration
+            const generateRandomData = () => {
+                const totalDevices = Math.floor(Math.random() * 100) + 50;
+                const secureDevices = Math.floor(totalDevices * (Math.random() * 0.2 + 0.7)); // 70-90% secure
+                const atRiskDevices = totalDevices - secureDevices;
+                const vulnerabilities = Math.floor(Math.random() * 20);
+
+                const threatTypes = ['DDoS Attempt', 'Malware', 'Phishing', 'Unauthorized Access', 'Firmware Exploit'];
+                const threatData = threatTypes.map(() => Math.floor(Math.random() * 30));
+
+                const timelineLabels = Array.from({ length: 7 }, (_, i) => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - (6 - i));
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                });
+                const timelineData = timelineLabels.map(() => Math.floor(Math.random() * 20));
+
+                return {
+                    totalDevices,
+                    secureDevices,
+                    atRiskDevices,
+                    vulnerabilities,
+                    threatData,
+                    threatTypes,
+                    timelineLabels,
+                    timelineData
+                };
+            };
+
+            const data = generateRandomData();
+
+            // Update summary statistics
+            document.getElementById('total-devices').textContent = data.totalDevices;
+            document.getElementById('secure-devices').textContent = data.secureDevices;
+            document.getElementById('at-risk-devices').textContent = data.atRiskDevices;
+            document.getElementById('vulnerabilities').textContent = data.vulnerabilities;
+
+            // Render Threat Distribution Pie Chart
+            const ctxThreatDist = document.getElementById('threatDistributionChart').getContext('2d');
+            new Chart(ctxThreatDist, {
+                type: 'pie',
+                data: {
+                    labels: data.threatTypes,
+                    datasets: [{
+                        data: data.threatData,
+                        backgroundColor: ['#58a6ff', '#7ee787', '#d2a8ff', '#e1684c', '#f8d29b'],
+                        borderColor: '#0d1117',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#c9d1d9' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    return `${label}: ${value} instances`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Render Threat Over Time Line Chart
+            const ctxThreatTimeline = document.getElementById('threatTimelineChart').getContext('2d');
+            new Chart(ctxThreatTimeline, {
+                type: 'line',
+                data: {
+                    labels: data.timelineLabels,
+                    datasets: [{
+                        label: 'Threats Detected',
+                        data: data.timelineData,
+                        borderColor: '#e1684c',
+                        backgroundColor: 'rgba(225, 104, 76, 0.2)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: { color: '#21262d' },
+                            ticks: { color: '#8b949e' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#21262d' },
+                            ticks: { color: '#8b949e' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#c9d1d9' } },
+                        tooltip: { mode: 'index', intersect: false }
+                    }
+                }
+            });
+        });
+
+        // Function to handle wallet connection
+        function connectWallet() {
+            const walletAddressCard = document.getElementById('walletAddressCard');
+            const walletAddressValue = document.getElementById('walletAddressValue');
+            const fakeAddress = '0xAbC123...456xYz'; // A fake, truncated address
+
+            alert('Connecting to wallet...');
+            setTimeout(() => {
+                walletAddressValue.textContent = fakeAddress;
+                // Note: The HTML for walletAddressCard/Value doesn't exist in this file,
+                // but we keep the function for completeness if this script is shared.
+                // walletAddressCard.style.display = 'block'; 
+                alert('Wallet connected successfully!');
+            }, 1500); // Simulate network delay
+        }
+
+        // Add event listeners to your buttons in the main HTML file
+        // For the main "Connect Wallet" button (Assuming buttons exist in a larger context)
+        // document.querySelector('.service-card button[onclick*="connectwallet"]').onclick = connectWallet;
+        // document.querySelector('.feature-card[onclick*="wallet"]').onclick = connectWallet;
+    </script>
+</body>
+
+</html>

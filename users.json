@@ -1,0 +1,17 @@
+{
+  "testuser": {
+    "username": "testuser",
+    "password_hash": "pbkdf2:sha256:1000000$go0b6qlz0XTWSwt7$726699121a43b37809c01a4dab1dd09d5e50956bca2bfe774a2d3fb4e829ab98",
+    "email": "test@example.com"
+  },
+  "admin": {
+    "username": "admin",
+    "password_hash": "pbkdf2:sha256:1000000$iyPpEPw8PSC13cpD$df3ac8f9d7144e201efce63fed71594d5d15ae5b097544031ec67775bfbeb752",
+    "email": "admin@example.com"
+  },
+  "kabileshk702@outlook.com": {
+    "username": "kabilesh",
+    "password_hash": "pbkdf2:sha256:1000000$wjyp5SVvaHch2vDG$8e4f5b78fa8d118e8efa2b7237547a3388d691168e2e03efb9e7879056d1394c",
+    "email": "kabileshk702@outlook.com"
+  }
+}

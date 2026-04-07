@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureChain - Certificate Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --dark: #0d0d2b;
+            --darker: #181a2b;
+            --accent: #193177;
+            --text: #ffffff;
+            --success: #00e666;
+            --warning: #ffae42;
+            --danger: #ff4d4d;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: rgba(13, 13, 43, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--primary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            color: #cccccc;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: var(--dark);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--dark);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .section-title {
+            text-align: center;
+            margin: 3rem 0 2rem;
+            font-size: 2.5rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .template-card {
+            background: rgba(24, 26, 43, 0.7);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid rgba(79, 172, 254, 0.1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .template-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.05) 0%, rgba(79, 172, 254, 0.05) 100%);
+            z-index: -1;
+        }
+
+        .template-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.2);
+            border-color: rgba(79, 172, 254, 0.3);
+        }
+
+        .template-card.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+        }
+
+        .template-preview {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .template-1 {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid var(--primary);
+        }
+
+        .template-2 {
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+            border: 2px solid var(--gold);
+        }
+
+        .template-3 {
+            background: linear-gradient(135deg, #533483 0%, #0f3460 100%);
+            border: 2px solid var(--silver);
+        }
+
+        .template-4 {
+            background: linear-gradient(135deg, #e94560 0%, #533483 100%);
+            border: 2px solid var(--bronze);
+        }
+
+        .template-preview::before {
+            content: 'Certificate Preview';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .template-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .template-card p {
+            color: #cccccc;
+            line-height: 1.6;
+        }
+
+        .certificate-section {
+            background: rgba(13, 13, 43, 0.5);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 3rem 0;
+            border: 1px solid rgba(79, 172, 254, 0.2);
+        }
+
+        .certificate-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .form-control {
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            background: rgba(13, 13, 43, 0.7);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.2);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .certificate-preview-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 3rem;
+        }
+
+        .certificate {
+            width: 800px;
+            height: 600px;
+            background: white;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            color: #333;
+        }
+
+        .certificate.template-1 {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+        }
+
+        .certificate.template-2 {
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+            color: white;
+            border: 15px solid var(--gold);
+        }
+
+        .certificate.template-3 {
+            background: linear-gradient(135deg, #533483 0%, #0f3460 100%);
+            color: white;
+            border: 10px solid var(--silver);
+        }
+
+        .certificate.template-4 {
+            background: linear-gradient(135deg, #e94560 0%, #533483 100%);
+            color: white;
+            border: 8px solid var(--bronze);
+        }
+
+        .certificate-border {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+        }
+
+        .certificate-content {
+            padding: 60px 40px;
+            text-align: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .certificate-header {
+            margin-bottom: 40px;
+        }
+
+        .certificate-header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .certificate-header h2 {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 300;
+            margin-bottom: 30px;
+        }
+
+        .certificate-body {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .certificate-body h3 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .certificate-recipient {
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .certificate-details {
+            margin: 20px 0;
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        .certificate-footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .certificate-signatures {
+            display: flex;
+            gap: 40px;
+        }
+
+        .signature {
+            text-align: center;
+        }
+
+        .signature-line {
+            width: 200px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.5);
+            margin: 10px 0 5px;
+        }
+
+        .certificate-qr {
+            width: 120px;
+            height: 120px;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            color: #333;
+            font-size: 0.8rem;
+        }
+
+        .certificate-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid rgba(79, 172, 254, 0.2);
+            color: #cccccc;
+        }
+
+        .glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.1) 0%, transparent 70%);
+            filter: blur(20px);
+            z-index: -1;
+        }
+
+        .glow-1 {
+            top: 10%;
+            left: 10%;
+        }
+
+        .glow-2 {
+            bottom: 10%;
+            right: 10%;
+            background: radial-gradient(circle, rgba(79, 172, 254, 0.1) 0%, transparent 70%);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--darker);
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
+        }
+
+        .modal h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .modal p {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        /* Service-specific certificate styles */
+        .service-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .badge-iot {
+            background: rgba(0, 242, 254, 0.2);
+            color: var(--primary);
+        }
+
+        .badge-nft {
+            background: rgba(255, 215, 0, 0.2);
+            color: var(--gold);
+        }
+
+        .badge-ai {
+            background: rgba(0, 230, 102, 0.2);
+            color: var(--success);
+        }
+
+        .badge-blockchain {
+            background: rgba(79, 172, 254, 0.2);
+            color: var(--secondary);
+        }
+
+        .service-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .service-card {
+            background: rgba(24, 26, 43, 0.7);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(79, 172, 254, 0.1);
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.2);
+            border-color: rgba(79, 172, 254, 0.3);
+        }
+
+        .service-card.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+        }
+
+        .service-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Download status indicator */
+        .download-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--darker);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            display: none;
+            max-width: 300px;
+        }
+
+        .download-status.success {
+            border-color: var(--success);
+        }
+
+        .download-status.error {
+            border-color: var(--danger);
+        }
+
+        .download-status-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-status-icon {
+            font-size: 1.5rem;
+        }
+
+        .download-status.success .download-status-icon {
+            color: var(--success);
+        }
+
+        .download-status.error .download-status-icon {
+            color: var(--danger);
+        }
+
+        .download-status-text {
+            flex: 1;
+        }
+
+        .download-status-close {
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .certificate-form, .certificate-footer {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .certificate {
+                width: 100%;
+                height: 400px;
+            }
+            
+            .certificate-header h1 {
+                font-size: 2rem;
+            }
+            
+            .certificate-recipient {
+                font-size: 1.8rem;
+            }
+            
+            .certificate-actions {
+                flex-wrap: wrap;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .service-selector {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .templates-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .certificate-section {
+                padding: 1.5rem;
+            }
+            
+            .hero {
+                padding: 2rem 0;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .certificate-content {
+                padding: 30px 20px;
+            }
+            
+            .certificate-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .certificate-body h3 {
+                font-size: 1.5rem;
+            }
+            
+            .certificate-recipient {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <span>🔐</span> SecureChain
+        </div>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#templates">Templates</a></li>
+            <li><a href="#generator">Generator</a></li>
+        </ul>
+        <button class="btn"><i class="fas fa-wallet"></i> Connect Wallet</button>
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <h1>SecureChain Certificate Generator</h1>
+            <p>Create professional, blockchain-verified digital certificates for all SecureChain services. All certificates are secured with military-grade encryption and recorded on the blockchain.</p>
+            <button class="btn" id="generateCertBtn"><i class="fas fa-certificate"></i> Generate New Certificate</button>
+        </section>
+
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+
+        <section id="services" class="certificate-section">
+            <h2 class="section-title">SecureChain Services</h2>
+            <p class="text-center">Select a service to generate a specialized certificate</p>
+            
+            <div class="service-selector">
+                <div class="service-card" data-service="ai-threat">
+                    <div class="service-icon">🤖</div>
+                    <h3>AI Threat Detection</h3>
+                    <p>Certificate for AI threat analysis and security monitoring</p>
+                </div>
+                <div class="service-card" data-service="iot-registrar">
+                    <div class="service-icon">📡</div>
+                    <h3>IoT Trust Registrar</h3>
+                    <p>Certificate for IoT device registration and trust verification</p>
+                </div>
+                <div class="service-card" data-service="nft-validator">
+                    <div class="service-icon">🎓</div>
+                    <h3>NFT Cert Validator</h3>
+                    <p>Certificate for NFT validation and digital asset authentication</p>
+                </div>
+                <div class="service-card" data-service="blockchain-vault">
+                    <div class="service-icon">☁️</div>
+                    <h3>Blockchain Vault</h3>
+                    <p>Certificate for secure data storage and encryption</p>
+                </div>
+            </div>
+        </section>
+
+        <h2 class="section-title" id="templates">Certificate Templates</h2>
+        
+        <div class="templates-grid">
+            <div class="template-card active" data-template="1">
+                <div class="template-preview template-1"></div>
+                <h3>Modern Blue</h3>
+                <p>Clean, professional design with SecureChain branding. Perfect for IoT device certificates.</p>
+            </div>
+            <div class="template-card" data-template="2">
+                <div class="template-preview template-2"></div>
+                <h3>Golden Premium</h3>
+                <p>Elegant gold-accented design for premium certificates and achievements.</p>
+            </div>
+            <div class="template-card" data-template="3">
+                <div class="template-preview template-3"></div>
+                <h3>Silver Professional</h3>
+                <p>Sophisticated silver-themed certificate for professional accreditations.</p>
+            </div>
+            <div class="template-card" data-template="4">
+                <div class="template-preview template-4"></div>
+                <h3>Vibrant Modern</h3>
+                <p>Colorful, contemporary design perfect for NFTs and digital assets.</p>
+            </div>
+        </div>
+
+        <section class="certificate-section" id="generator">
+            <h2 class="section-title">Generate Service Certificate</h2>
+            
+            <div class="certificate-form">
+                <div class="form-group">
+                    <label for="certificateService">Service Type</label>
+                    <select id="certificateService" class="form-control">
+                        <option value="ai-threat">AI Threat Detection</option>
+                        <option value="iot-registrar">IoT Trust Registrar</option>
+                        <option value="nft-validator">NFT Cert Validator</option>
+                        <option value="blockchain-vault">Blockchain Vault</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="recipientName">Recipient Name</label>
+                    <input type="text" id="recipientName" class="form-control" placeholder="Enter recipient's full name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="deviceName">Device/Asset Name</label>
+                    <input type="text" id="deviceName" class="form-control" placeholder="Enter device or asset name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="deviceId">Device/Asset ID</label>
+                    <input type="text" id="deviceId" class="form-control" placeholder="Enter unique identifier">
+                </div>
+                
+                <div class="form-group">
+                    <label for="issueDate">Issue Date</label>
+                    <input type="date" id="issueDate" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="expiryDate">Expiry Date</label>
+                    <input type="date" id="expiryDate" class="form-control">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="certificateTitle">Certificate Title</label>
+                    <input type="text" id="certificateTitle" class="form-control" placeholder="e.g., AI Threat Detection Certification">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="certificateDescription">Certificate Description</label>
+                    <textarea id="certificateDescription" class="form-control" rows="3" placeholder="Describe the purpose and significance of this certificate"></textarea>
+                </div>
+            </div>
+            
+            <div class="certificate-actions">
+                <button class="btn" id="previewCertBtn"><i class="fas fa-eye"></i> Preview Certificate</button>
+                <button class="btn btn-outline" id="resetFormBtn"><i class="fas fa-redo"></i> Reset Form</button>
+            </div>
+            
+            <div class="certificate-preview-container">
+                <div class="certificate template-1" id="certificatePreview">
+                    <div class="certificate-border"></div>
+                    <div class="certificate-content">
+                        <div class="certificate-header">
+                            <h1>SecureChain Certificate</h1>
+                            <h2>Blockchain-Verified Digital Certification</h2>
+                            <div id="previewServiceBadge" class="service-badge badge-ai">AI Threat Detection</div>
+                        </div>
+                        
+                        <div class="certificate-body">
+                            <h3 id="previewCertTitle">AI Threat Detection Certification</h3>
+                            <div class="certificate-recipient" id="previewRecipient">Recipient Name</div>
+                            <div class="certificate-details">
+                                <p>Has successfully completed the requirements for</p>
+                                <p id="previewDeviceName">Device/Asset Name</p>
+                                <p>and is hereby granted this certificate of authentication</p>
+                                <p id="previewDescription" style="margin-top: 20px; font-style: italic;"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="certificate-footer">
+                            <div class="certificate-signatures">
+                                <div class="signature">
+                                    <div class="signature-line"></div>
+                                    <p>SecureChain Authority</p>
+                                </div>
+                                <div class="signature">
+                                    <div class="signature-line"></div>
+                                    <p id="previewIssueDate">Issue Date</p>
+                                </div>
+                            </div>
+                            <div class="certificate-qr">
+                                <div>QR CODE</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="certificate-actions">
+                <button class="btn" id="generateFinalBtn"><i class="fas fa-certificate"></i> Generate Certificate</button>
+                <button class="btn btn-outline" id="downloadPdfBtn"><i class="fas fa-file-pdf"></i> Download PDF</button>
+                <button class="btn btn-outline" id="downloadPngBtn"><i class="fas fa-image"></i> Download PNG</button>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>© 2023 SecureChain | Blockchain-Powered Security Platform</p>
+        <p>All certificates are secured with military-grade encryption and recorded on the blockchain</p>
+    </footer>
+
+    <!-- Download Status Indicator -->
+    <div class="download-status" id="downloadStatus">
+        <div class="download-status-content">
+            <div class="download-status-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="download-status-text">
+                <strong>Download Complete</strong>
+                <p id="downloadStatusMessage">Your file has been downloaded successfully.</p>
+            </div>
+            <button class="download-status-close" id="closeDownloadStatus">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <h2><i class="fas fa-check-circle" style="color: var(--success);"></i> Certificate Generated!</h2>
+            <p>Your e-certificate has been successfully created and recorded on the SecureChain blockchain.</p>
+            <p>Certificate ID: <strong id="generatedCertId">CERT-XXXXXX</strong></p>
+            <div class="modal-actions">
+                <button class="btn" id="viewCertBtn">View Certificate</button>
+                <button class="btn btn-outline" id="closeModalBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Service-specific certificate configurations
+        const serviceConfigs = {
+            'ai-threat': {
+                title: 'AI Threat Detection Certification',
+                description: 'Certificate of completion for AI-powered threat detection and security monitoring implementation',
+                badgeClass: 'badge-ai',
+                badgeText: 'AI Threat Detection'
+            },
+            'iot-registrar': {
+                title: 'IoT Trust Registrar Certification',
+                description: 'Certificate of registration for IoT device trust verification and security compliance',
+                badgeClass: 'badge-iot',
+                badgeText: 'IoT Trust Registrar'
+            },
+            'nft-validator': {
+                title: 'NFT Cert Validator Certification',
+                description: 'Certificate of authenticity for NFT validation and digital asset verification',
+                badgeClass: 'badge-nft',
+                badgeText: 'NFT Cert Validator'
+            },
+            'blockchain-vault': {
+                title: 'Blockchain Vault Certification',
+                description: 'Certificate of secure data storage implementation with quantum-resistant encryption',
+                badgeClass: 'badge-blockchain',
+                badgeText: 'Blockchain Vault'
+            }
+        };
+
+        // DOM Elements
+        const generateCertBtn = document.getElementById('generateCertBtn');
+        const previewCertBtn = document.getElementById('previewCertBtn');
+        const resetFormBtn = document.getElementById('resetFormBtn');
+        const certificatePreview = document.getElementById('certificatePreview');
+        const generateFinalBtn = document.getElementById('generateFinalBtn');
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        const downloadPngBtn = document.getElementById('downloadPngBtn');
+        const successModal = document.getElementById('successModal');
+        const viewCertBtn = document.getElementById('viewCertBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const generatedCertId = document.getElementById('generatedCertId');
+        const templateCards = document.querySelectorAll('.template-card');
+        const serviceCards = document.querySelectorAll('.service-card');
+        const certificateService = document.getElementById('certificateService');
+        const downloadStatus = document.getElementById('downloadStatus');
+        const downloadStatusMessage = document.getElementById('downloadStatusMessage');
+        const closeDownloadStatus = document.getElementById('closeDownloadStatus');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        let selectedTemplate = '1';
+        let selectedService = 'ai-threat';
+        let currentCertificate = null;
+
+        // Set default dates
+        document.getElementById('issueDate').valueAsDate = new Date();
+        const expiryDate = new Date();
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        document.getElementById('expiryDate').valueAsDate = expiryDate;
+
+        // Service selection
+        serviceCards.forEach(card => {
+            card.addEventListener('click', function() {
+                serviceCards.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                selectedService = this.getAttribute('data-service');
+                
+                // Update form with service-specific values
+                updateFormForService(selectedService);
+                updateCertificatePreview();
+            });
+        });
+
+        // Service dropdown change
+        certificateService.addEventListener('change', function() {
+            selectedService = this.value;
+            updateFormForService(selectedService);
+            updateCertificatePreview();
+        });
+
+        // Template selection
+        templateCards.forEach(card => {
+            card.addEventListener('click', function() {
+                templateCards.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                selectedTemplate = this.getAttribute('data-template');
+                updateCertificatePreview();
+            });
+        });
+
+        // Update form with service-specific values
+        function updateFormForService(service) {
+            const config = serviceConfigs[service];
+            document.getElementById('certificateTitle').value = config.title;
+            document.getElementById('certificateDescription').value = config.description;
+            certificateService.value = service;
+        }
+
+        // Generate a random certificate ID
+        function generateCertificateId() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let result = 'CERT-';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            result += '-' + new Date().getFullYear();
+            return result;
+        }
+
+        // Generate a random blockchain hash
+        function generateBlockchainHash() {
+            let result = '0x';
+            const chars = '0123456789abcdef';
+            for (let i = 0; i < 64; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // Update certificate preview
+        function updateCertificatePreview() {
+            const recipientName = document.getElementById('recipientName').value || 'Recipient Name';
+            const deviceName = document.getElementById('deviceName').value || 'Device/Asset Name';
+            const certificateTitle = document.getElementById('certificateTitle').value || 'Service Certification';
+            const certificateDescription = document.getElementById('certificateDescription').value || '';
+            const issueDate = document.getElementById('issueDate').value || new Date().toISOString().split('T')[0];
+            
+            // Update preview elements
+            document.getElementById('previewRecipient').textContent = recipientName;
+            document.getElementById('previewDeviceName').textContent = deviceName;
+            document.getElementById('previewCertTitle').textContent = certificateTitle;
+            document.getElementById('previewIssueDate').textContent = formatDate(issueDate);
+            document.getElementById('previewDescription').textContent = certificateDescription;
+            
+            // Update service badge
+            const config = serviceConfigs[selectedService];
+            const badgeElement = document.getElementById('previewServiceBadge');
+            badgeElement.className = `service-badge ${config.badgeClass}`;
+            badgeElement.textContent = config.badgeText;
+            
+            // Update template
+            certificatePreview.className = 'certificate template-' + selectedTemplate;
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+
+        // Show download status
+        function showDownloadStatus(message, isSuccess = true) {
+            downloadStatusMessage.textContent = message;
+            downloadStatus.className = 'download-status ' + (isSuccess ? 'success' : 'error');
+            downloadStatus.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                downloadStatus.style.display = 'none';
+            }, 5000);
+        }
+
+        // Close download status
+        closeDownloadStatus.addEventListener('click', function() {
+            downloadStatus.style.display = 'none';
+        });
+
+        // Show loading overlay
+        function showLoading() {
+            loadingOverlay.style.display = 'flex';
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
+        }
+
+        // Preview certificate
+        previewCertBtn.addEventListener('click', function() {
+            const recipientName = document.getElementById('recipientName').value;
+            const deviceName = document.getElementById('deviceName').value;
+            
+            if (!recipientName || !deviceName) {
+                alert('Please fill in recipient name and device name');
+                return;
+            }
+
+            updateCertificatePreview();
+            
+            // Scroll to preview
+            certificatePreview.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        async function saveCertificateToApi(payload) {
+            try {
+                const response = await fetch('/api/generate-certificate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to generate certificate');
+                }
+                return data;
+            } catch (error) {
+                console.error('Certificate API error:', error);
+                return null;
+            }
+        }
+
+        // Generate final certificate
+        generateFinalBtn.addEventListener('click', async function() {
+            const recipientName = document.getElementById('recipientName').value;
+            const deviceName = document.getElementById('deviceName').value;
+            const deviceId = document.getElementById('deviceId').value;
+            const certificateTitle = document.getElementById('certificateTitle').value;
+            const certificateDescription = document.getElementById('certificateDescription').value;
+            const issueDate = document.getElementById('issueDate').value;
+            const expiryDate = document.getElementById('expiryDate').value;
+
+            if (!recipientName || !deviceName) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const newCertificate = {
+                id: generateCertificateId(),
+                service: selectedService,
+                recipient: recipientName,
+                deviceName: deviceName,
+                deviceId: deviceId,
+                title: certificateTitle,
+                description: certificateDescription,
+                issueDate: issueDate,
+                expiryDate: expiryDate,
+                status: "active",
+                template: selectedTemplate,
+                blockchainHash: generateBlockchainHash()
+            };
+
+            const apiResult = await saveCertificateToApi({
+                name: recipientName,
+                course: certificateTitle,
+                date: issueDate,
+                issuer: "SecureChain Academy",
+                device_name: deviceName,
+                device_id: deviceId,
+                service: selectedService
+            });
+
+            if (apiResult && apiResult.certificate && apiResult.certificate.id) {
+                newCertificate.id = apiResult.certificate.id;
+            }
+
+            // Show success modal
+            generatedCertId.textContent = newCertificate.id;
+            successModal.style.display = 'flex';
+            currentCertificate = newCertificate;
+            
+            resetForm();
+        });
+
+        // Reset form
+        resetFormBtn.addEventListener('click', resetForm);
+
+        function resetForm() {
+            document.getElementById('recipientName').value = '';
+            document.getElementById('deviceName').value = '';
+            document.getElementById('deviceId').value = '';
+            document.getElementById('certificateTitle').value = '';
+            document.getElementById('certificateDescription').value = '';
+            
+            // Reset dates to default
+            document.getElementById('issueDate').valueAsDate = new Date();
+            const expiryDate = new Date();
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+            document.getElementById('expiryDate').valueAsDate = expiryDate;
+            
+            // Reset template to first one
+            templateCards.forEach(c => c.classList.remove('active'));
+            templateCards[0].classList.add('active');
+            selectedTemplate = '1';
+            
+            // Reset service to first one
+            serviceCards.forEach(c => c.classList.remove('active'));
+            serviceCards[0].classList.add('active');
+            selectedService = 'ai-threat';
+            updateFormForService(selectedService);
+            
+            updateCertificatePreview();
+        }
+
+        // Enhanced Download Functions for Certificate Generator
+
+        // Function to download certificate as PDF
+        function downloadCertificateAsPDF() {
+            if (!currentCertificate) {
+                showDownloadStatus('Please generate a certificate first', false);
+                return;
+            }
+            
+            showLoading();
+            
+            // Ensure the certificate preview is up to date
+            updateCertificatePreview();
+            
+            // Give the browser a moment to render the updates
+            setTimeout(() => {
+                const certificateElement = document.getElementById('certificatePreview');
+                
+                html2canvas(certificateElement, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: null,
+                    logging: false,
+                    width: certificateElement.offsetWidth,
+                    height: certificateElement.offsetHeight
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jspdf.jsPDF({
+                        orientation: 'landscape',
+                        unit: 'px',
+                        format: [canvas.width, canvas.height]
+                    });
+
+                    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                    
+                    // Save the PDF file
+                    const fileName = `${currentCertificate.id}.pdf`;
+                    pdf.save(fileName);
+                    
+                    hideLoading();
+                    
+                    // Show download status
+                    showDownloadStatus(`PDF certificate "${fileName}" downloaded successfully!`);
+                }).catch(error => {
+                    console.error('Error generating PDF:', error);
+                    hideLoading();
+                    showDownloadStatus('Error generating PDF. Please try again.', false);
+                });
+            }, 100);
+        }
+
+        // Function to download certificate as PNG
+        function downloadCertificateAsPNG() {
+            if (!currentCertificate) {
+                showDownloadStatus('Please generate a certificate first', false);
+                return;
+            }
+            
+            showLoading();
+            
+            // Ensure the certificate preview is up to date
+            updateCertificatePreview();
+            
+            // Give the browser a moment to render the updates
+            setTimeout(() => {
+                const certificateElement = document.getElementById('certificatePreview');
+                
+                html2canvas(certificateElement, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: null,
+                    logging: false,
+                    width: certificateElement.offsetWidth,
+                    height: certificateElement.offsetHeight
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    const fileName = `${currentCertificate.id}.png`;
+                    link.download = fileName;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    
+                    hideLoading();
+                    
+                    // Show download status
+                    showDownloadStatus(`PNG certificate "${fileName}" downloaded successfully!`);
+                }).catch(error => {
+                    console.error('Error generating PNG:', error);
+                    hideLoading();
+                    showDownloadStatus('Error generating PNG. Please try again.', false);
+                });
+            }, 100);
+        }
+
+        // Download PDF
+        downloadPdfBtn.addEventListener('click', downloadCertificateAsPDF);
+
+        // Download PNG
+        downloadPngBtn.addEventListener('click', downloadCertificateAsPNG);
+
+        // Close modal
+        closeModalBtn.addEventListener('click', function() {
+            successModal.style.display = 'none';
+        });
+
+        // View certificate from modal
+        viewCertBtn.addEventListener('click', function() {
+            successModal.style.display = 'none';
+            document.getElementById('generator').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Scroll to certificate generator
+        generateCertBtn.addEventListener('click', function() {
+            document.getElementById('generator').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Update preview when form fields change
+        document.getElementById('recipientName').addEventListener('input', updateCertificatePreview);
+        document.getElementById('deviceName').addEventListener('input', updateCertificatePreview);
+        document.getElementById('certificateTitle').addEventListener('input', updateCertificatePreview);
+        document.getElementById('certificateDescription').addEventListener('input', updateCertificatePreview);
+        document.getElementById('issueDate').addEventListener('change', updateCertificatePreview);
+
+        // Initial render
+        updateCertificatePreview();
+    </script>
+</body>
+</html>

@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SecureChain</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* ==================================== */
+        /* === Chatbot Styles (New/Updated) === */
+        /* ==================================== */
+
+        #chatbot {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+        }
+
+        #chatToggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: white;
+            font-size: 30px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #chatToggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 242, 254, 0.6);
+        }
+
+        #chatWindow {
+            width: 350px;
+            height: 450px;
+            background: #181a2b;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px #00f2fe;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            /* Hidden state styles */
+            transform: scale(0.8) translateY(10%);
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0.3s;
+        }
+
+        #chatWindow:not(.chat-closed) {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #chatHeader {
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            color: #000;
+            padding: 12px 15px;
+            font-weight: times new roman bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #193177ff;
+        }
+
+        #chatClose {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #181a2b;
+            font-weight: bold;
+        }
+
+        #chatMessages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #0d0d2b;
+            border-bottom: 1px solid #282c44;
+            display: flex;
+            /* Added for message alignment */
+            flex-direction: column;
+            /* Added for message alignment */
+        }
+
+        #chatMessages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chatMessages::-webkit-scrollbar-thumb {
+            background-color: #4facfe;
+            border-radius: 10px;
+        }
+
+        /* Message Bubble Styles for Smaller Fit */
+        .chat-message {
+            /* Reduced padding from 8px 12px to 6px 10px */
+            padding: 6px 10px;
+            /* Reduced max-width from 80% to 70% */
+            max-width: 70%;
+            border-radius: 15px;
+            margin-bottom: 8px;
+            /* Slightly reduced margin */
+            line-height: 1.4;
+            /* Added display: inline-block; to make the bubble wrap tightly to the content */
+            display: inline-block;
+        }
+
+        .chat-message.user {
+            background-color: #4facfe;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-message.ai {
+            background-color: #282c44;
+            color: #00f2fe;
+            align-self: flex-start;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+
+        #chatInputArea {
+            display: flex;
+            padding: 10px 15px;
+            border-top: 1px solid #282c44;
+            background-color: #181a2b;
+        }
+
+        #chatInput {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #4facfe;
+            background-color: #0d0d2b;
+            color: white;
+            outline: none;
+            font-size: 14px;
+        }
+
+        #sendBtn {
+            background: #00f2fe;
+            color: #181a2b;
+            border: none;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            margin-left: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #sendBtn:hover {
+            background: #4facfe;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="chatbot">
+        <button id="chatToggle" title="Chat with SecureChain AI">🤖</button>
+
+        <div id="chatWindow" class="chat-closed">
+            <div id="chatHeader">🤖 SecureChain Assistant
+                <button id="chatClose">✖</button>
+            </div>
+
+            <div id="chatMessages"></div>
+
+            <div id="chatInputArea">
+                <input type="text" id="chatInput" placeholder="Ask about AI, IoT, Blockchain, NFTs..." />
+                <button id="sendBtn">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+<header class="navbar">
+    <div class="logo">🔐 SecureChain</div>
+    <nav>
+        <ul class="nav-links">
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#explorer">Explorer</a></li>
+            <li><a href="#threatmap">Threat Map</a></li>
+            <li><a href="#console">Console</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+    <div class="actions" id="authActions">
+        <button class="fax" id="themeToggle" onclick="toggleTheme()">🌙</button>
+        <button onclick="location.href='login.html'">Login / Sign Up</button>
+    </div>
+</header>
+
+<section id="hero" class="hero section">
+    <div class="hero-content">
+        <h1>⚡ AI-Powered Blockchain Security Platform</h1>
+        <p>
+            SecureChain combines <strong>AI-driven threat detection</strong>,
+            <strong>encrypted storage</strong>, <strong>IoT trust</strong>, and
+            <strong>NFT validation</strong> to build a next-gen
+            <em>decentralized cybersecurity ecosystem</em>.
+        </p>
+        <button onclick="showExplore()">🚀 Explore Now</button>
+    </div>
+    <div class="hero-glow"></div>
+</section>
+<div id="analytics-container" style="display:none;">
+    <h2>📊 Analytics</h2>
+    <table border="1" id="analyticsTable">
+        <thead>
+            <tr>
+                <th>Device</th>
+                <th>Status</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<section id="explore" style="display:none; padding:60px; background:#0d0d2b; color:white; text-align:center;">
+    <h2>🚀 Explore SecureChain Ecosystem</h2>
+    <p>Discover how AI, Blockchain, IoT, and NFTs come together for next-gen security.</p>
+
+    <div class="explore-grid">
+        <div
+            style="display:flex; flex-direction:row; justify-content:center; align-items:flex-end; gap:32px; margin: 30px 0 10px 0;">
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="AI"
+                    style="width:48px; height:48px; margin-bottom:6px;">
+                <div style="font-weight:600; margin-bottom:2px;">AI Threat Detection</div>
+                <div style="font-size:0.95em; color:#b0b0b0;">Real-time anomaly detection powered by ML.</div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <img src="https://cdn-icons-png.flaticon.com/512/2910/2910768.png" alt="NFT"
+                    style="width:48px; height:48px; filter: brightness(0) invert(1); margin-bottom:6px;">
+                <div style="font-weight:600; margin-bottom:2px;">NFT Cert Validator</div>
+                <div style="font-size:0.95em; color:#b0b0b0;">Identity & certificate validation using NFTs.</div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <img src="https://cdn-icons-png.flaticon.com/512/201/201623.png" alt="IoT"
+                    style="width:48px; height:48px; margin-bottom:6px;">
+                <div style="font-weight:600; margin-bottom:2px;">IoT Trust Registrar</div>
+                <div style="font-size:0.95em; color:#b0b0b0;">Secure decentralized registry for IoT devices.</div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <img src="https://cdn-icons-png.flaticon.com/512/1694/1694321.png" alt="Blockchain"
+                    style="width:48px; height:48px; filter: brightness(0) invert(1); margin-bottom:6px;">
+                <div style="font-weight:600; margin-bottom:2px;">Blockchain Ledger</div>
+                <div style="font-size:0.95em; color:#b0b0b0;">Immutable storage ensuring trust & transparency.</div>
+            </div>
+        </div>
+
+        <div class="architecture">
+            <h2>⚡ Advanced System Architecture</h2>
+            <img src="https://tse1.mm.bing.net/th/id/OIP.wTfkmAwK-O9MHifjJNG1ZwHaFM?cb=12&rs=1&pid=ImgDetMain&o=7&rm=320"
+                alt="System Architecture" style="max-width:400px; width:100%; border-radius:12px;">
+        </div>
+    </div>
+</section>
+
+<script>
+    // Apply theme class to body on page load based on localStorage
+    document.addEventListener('DOMContentLoaded', () => {
+        const theme = localStorage.getItem('sc_theme') || 'dark';
+        document.body.classList.remove('light-mode', 'dark-mode');
+        if (theme === 'light') {
+            document.body.classList.add('light-mode');
+            // Ensure icon is correct on load
+            document.getElementById('themeToggle').textContent = '☀️';
+        } else {
+            document.body.classList.add('dark-mode');
+            // Ensure icon is correct on load
+            document.getElementById('themeToggle').textContent = '🌙';
+        }
+
+        // Check login status on page load and update UI
+        updateAuthUI();
+    });
+
+    // ⭐ THE MISSING FUNCTION TO TOGGLE THEME ⭐
+    function toggleTheme() {
+        const currentTheme = localStorage.getItem('sc_theme') || 'dark';
+        let newTheme = '';
+
+        // Determine the new theme and update classes
+        if (currentTheme === 'dark') {
+            newTheme = 'light';
+            document.body.classList.remove('dark-mode');
+            document.body.classList.add('light-mode');
+            document.getElementById('themeToggle').textContent = '☀️';
+        } else {
+            newTheme = 'dark';
+            document.body.classList.remove('light-mode');
+            document.body.classList.add('dark-mode');
+            document.getElementById('themeToggle').textContent = '🌙';
+        }
+
+        // Save the new theme to localStorage
+        localStorage.setItem('sc_theme', newTheme);
+    }
+
+    function showExplore() {
+        document.getElementById("explore").style.display = "block";
+    }
+</script>
+
+<section id="features" class="section features-grid">
+    <div class="features-row">
+        <div class="feature-card glow" onclick="location.href='encrypted.html'">
+            <i>🔒</i>
+            <h3>Encrypted Storage</h3>
+        </div>
+        <div class="feature-card glow" onclick="location.href='ai.html'">
+            <i>🤖</i>
+            <h3>AI Threat Detection</h3>
+        </div>
+        <div class="feature-card glow" onclick="location.href='cyber.html'">
+            <i>🌐</i>
+            <h3>Live Cyber Threats</h3>
+        </div>
+        <div class="feature-card glow" onclick="location.href='iot.html'">
+            <i>📡</i>
+            <h3>IoT Trust Registrar</h3>
+        </div>
+    </div>
+    <div class="features-row">
+        <div class="feature-card glow" onclick="location.href='nft.html'">
+            <i>🎓</i>
+            <h3>NFT Cert Validator</h3>
+        </div>
+        <div class="feature-card glow" onclick="location.href='wallet.html'">
+            <i>💳</i>
+            <h3>Wallet Connector</h3>
+        </div>
+        <div class="feature-card glow" onclick="location.href='analytics.html'">
+            <i>📊</i>
+            <h3>Security Analytics</h3>
+        </div>
+        <div class="feature-card glow" onclick="location.href='quantum.html'">
+            <i>🧬</i>
+            <h3>Quantum Encryption</h3>
+        </div>
+    </div>
+</section>
+
+<section id="services" class="section service-cards">
+    <div class="service-card">
+        <h3>🔍 Threat Scan</h3>
+        <br>
+        <button onclick="window.open('threatscan.html', '_blank');" class="btn">Open Threat Scan</button>
+    </div>
+    <div class="service-card">
+        <h3>📶 Register IoT</h3>
+        <br>
+        <button onclick="window.open('registeriot.html', '_blank');" class="btn">Open Register IoT</button>
+    </div>
+    <div class="service-card">
+        <h3>🧾 Verify NFT</h3>
+        <br>
+        <button onclick="window.open('verifynft.html', '_blank');" class="btn">Open Verify NFT</button>
+    </div>
+    <div class="service-card">
+        <h3>☁️ Blockchain Vault</h3>
+        <br>
+        <button onclick="window.open('datavault.html', '_blank');" class="btn">Open Vault</button>
+    </div>
+    <div class="service-card">
+        <h3>🚨 Auto-Quarantine</h3>
+        <br>
+        <button onclick="window.open('quarantine.html', '_blank');" class="btn">Manage Quarantine</button>
+    </div>
+    <div class="service-card">
+        <h3>💳 Connect Wallet</h3>
+        <br>
+        <button onclick="window.open('connectwallet.html', '_blank');" class="btn">Open Connect
+            Wallet</button>
+    </div>
+    <div class="service-card">
+        <h3>📊 Security Dashboard</h3>
+        <br>
+        <button onclick="window.open('dashboardview.html', '_blank');" class="btn">Open Dashboard</button>
+    </div>
+    <div class="wallet-address-card" id="walletAddressCard" style="display:none; margin-top: 10px;">
+        <div class="wallet-address-label">Wallet Address</div>
+        <div id="walletAddressValue" class="wallet-address-value"></div>
+    </div>
+    <div class="service-card">
+        <h3>📜 E-Certificate Generator</h3>
+        <br>
+        <button onclick="window.open('certificate-generator.html', '_blank');" class="btn">Generate
+            E-Certificate</button>
+    </div>
+    </div>
+    <style>
+        /* The dashboard styles block was removed from here as the dashboard is now in dashboardview.html */
+
+        .scan-card {
+            background: linear-gradient(180deg, #001a1a 60%, #003d3d 100%);
+            border-radius: 14px;
+            box-shadow: 0 6px 24px rgba(0, 255, 255, 0.07);
+            padding: 22px;
+            color: #c8ffff;
+            font-family: Inter, monospace;
+            border: 1px solid rgba(0, 255, 255, 0.13);
+        }
+
+        .scan-card h3 {
+            margin-top: 0;
+            color: #9ff;
+        }
+
+        .scan-anim-wrap {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 18px 0;
+        }
+
+        .scan-anim {
+            position: relative;
+            width: 220px;
+            height: 16px;
+            background: rgba(0, 255, 255, 0.04);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 255, 0.08);
+        }
+
+        .scan-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00fff0, #00b3ff);
+            border-radius: 8px;
+            transition: width .2s;
+        }
+
+        .scan-dot {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 18px;
+            height: 18px;
+            background: #00e6e6;
+            border-radius: 50%;
+            box-shadow: 0 0 18px #00e6e6, 0 0 2px #fff;
+            transform: translateY(-50%) scale(0.7);
+            opacity: 0;
+        }
+
+        .scan-anim.scanning .scan-dot {
+            animation: scanDotMove 2.2s linear forwards;
+            opacity: 1;
+        }
+
+        @keyframes scanDotMove {
+            0% {
+                left: 0;
+            }
+
+            100% {
+                left: 202px;
+            }
+        }
+
+        .scan-status {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #dff;
+        }
+
+        .scan-result {
+            font-family: monospace;
+            font-size: 14px;
+            color: #cfe;
+            white-space: pre-wrap;
+            background: rgba(0, 0, 0, 0.06);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px dashed rgba(0, 255, 255, 0.03);
+            min-height: 40px;
+            margin-top: 8px;
+        }
+
+        .sev-good {
+            background: rgba(0, 200, 120, 0.12);
+            color: #8ff;
+            border: 1px solid rgba(0, 200, 120, 0.15);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+
+        .sev-bad {
+            background: rgba(255, 140, 0, 0.08);
+            color: #ffd88f;
+            border: 1px solid rgba(255, 140, 0, 0.12);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+
+        .sev-high {
+            background: rgba(255, 40, 40, 0.08);
+            color: #ffd8d8;
+            border: 1px solid rgba(255, 40, 40, 0.12);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+    </style>
+    <script>
+        let threatScanInProgress = false;
+        function startThreatScan() {
+            const scanStatus = document.getElementById('threatScanStatus');
+            const scanResult = document.getElementById('threatScanResult');
+            const scanAnim = document.getElementById('threatScanAnim');
+            const scanBar = scanAnim.querySelector('.scan-bar');
+            const scanDot = scanAnim.querySelector('.scan-dot');
+            if (threatScanInProgress) return;
+            threatScanInProgress = true;
+            scanStatus.textContent = 'Scanning for threats...';
+            scanResult.textContent = '';
+            scanAnim.classList.add('scanning');
+            scanBar.style.width = '0%';
+            scanDot.style.left = '0';
+            let elapsed = 0;
+            const total = 2200;
+            const tick = 60;
+            const timer = setInterval(() => {
+                elapsed += tick;
+                const pct = Math.min(100, Math.round((elapsed / total) * 100));
+                scanBar.style.width = pct + '%';
+                if (elapsed >= total) {
+                    clearInterval(timer);
+                    scanAnim.classList.remove('scanning');
+                    finishThreatScan(scanStatus, scanResult);
+                    threatScanInProgress = false;
+                }
+            }, tick);
+        }
+        function finishThreatScan(scanStatus, scanResult) {
+            // Weighted result
+            const r = Math.random();
+            let severity = 'Good', cls = 'sev-good';
+            if (r < 0.6) { severity = 'Good'; cls = 'sev-good'; }
+            else if (r < 0.9) { severity = 'Bad'; cls = 'sev-bad'; }
+            else { severity = 'High'; cls = 'sev-high'; }
+            scanStatus.innerHTML = `Scan Complete — Severity: <span class="${cls}">${severity.toUpperCase()}</span>`;
+            scanResult.innerHTML = `Findings:\n` + threatFindingsFor(severity).map(f => `• ${f}`).join('\n') + `\nRecommendations: <b>${threatRecommendationFor(severity)}</b>`;
+        }
+        function threatFindingsFor(severity) {
+            const good = [
+                'No open critical ports detected.',
+                'No suspicious outbound connections.',
+                'Firmware up-to-date on all devices.'
+            ];
+            const bad = [
+                'Unusual login attempts detected.',
+                'Outdated firmware on some devices.',
+                'Weak TLS configuration found.'
+            ];
+            const high = [
+                'Malware signature match detected.',
+                'Default credentials exposed to WAN.',
+                'Command-and-control beaconing detected.'
+            ];
+            if (severity === 'Good') return shuffle(good).slice(0, 2);
+            if (severity === 'Bad') return shuffle(bad).slice(0, 3);
+            return shuffle(high).slice(0, 3);
+        }
+        function threatRecommendationFor(severity) {
+            if (severity === 'Good') return 'Keep monitoring; schedule routine scan.';
+            if (severity === 'Bad') return 'Investigate findings and patch firmware.';
+            return 'Immediate action required: isolate affected devices.';
+        }
+        function shuffle(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+    </script>
+</section>
+
+<section id="explorer" class="section explorer">
+    <h2>🔍 Blockchain Explorer</h2>
+    <br>
+    <input id="explorerInput" placeholder="Enter address"
+        style="width:360px; height:40px; font-size:1.15em; margin-top:16px; border-radius:10px;" />
+    <button onclick="explore()">Search</button>
+    <pre id="explorerResult"></pre>
+</section>
+<section id="threatmap" class="threatmap-section">
+    <div class="threatmap-container">
+        <div class="threatmap-header">
+            <h1 class="threatmap-title">
+                <i class="fas fa-globe-americas"></i>
+                Live Threat Intelligence Map
+            </h1>
+            <p class="threatmap-subtitle">Real-time visualization of global cyber threats and attack patterns</p>
+
+            <div class="threatmap-controls">
+                <button id="scanBtn" class="scan-btn">
+                    <i class="fas fa-robot"></i>
+                    Run AI Threat Analysis
+                </button>
+                <div class="filter-controls">
+                    <select id="threatFilter" class="threat-filter">
+                        <option value="all">All Threats</option>
+                        <option value="critical">Critical Only</option>
+                        <option value="ddos">DDoS Attacks</option>
+                        <option value="malware">Malware</option>
+                        <option value="ransomware">Ransomware</option>
+                        <option value="phishing">Phishing</option>
+                    </select>
+                    <button id="refreshBtn" class="refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="threatmap-content">
+            <div class="threat-visualization">
+                <div class="globe-container">
+                    <div class="pulsing-globe">
+                        <div class="globe-core"></div>
+                        <div class="globe-grid"></div>
+                        <div class="threat-pulses">
+                            <!-- Threat pulses will be dynamically added -->
+                        </div>
+                    </div>
+                    <div class="threat-legend">
+                        <h4>Threat Severity</h4>
+                        <div class="legend-item">
+                            <span class="legend-dot critical"></span>
+                            <span>Critical</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot high"></span>
+                            <span>High</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot medium"></span>
+                            <span>Medium</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot low"></span>
+                            <span>Low</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="threat-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon critical">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>24</h3>
+                            <p>Critical Threats</p>
+                        </div>
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i> 12%
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon high">
+                            <i class="fas fa-biohazard"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>142</h3>
+                            <p>Active Incidents</p>
+                        </div>
+                        <div class="stat-trend down">
+                            <i class="fas fa-arrow-down"></i> 5%
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon medium">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>1,842</h3>
+                            <p>Protected Assets</p>
+                        </div>
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i> 3%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="threat-details">
+                <div class="threat-log-container">
+                    <div class="log-header">
+                        <h3>Threat Activity Log</h3>
+                        <div class="log-controls">
+                            <span class="live-indicator">
+                                <i class="fas fa-circle"></i>
+                                LIVE
+                            </span>
+                        </div>
+                    </div>
+                    <div id="threatLog" class="threat-log">
+                        <!-- Log entries will be dynamically added -->
+                    </div>
+                </div>
+
+                <div class="threat-analysis">
+                    <div class="analysis-header">
+                        <h3>Threat Analysis & Mitigation</h3>
+                        <div class="analysis-tabs">
+                            <button class="tab-btn active" data-tab="current">Current Threats</button>
+                            <button class="tab-btn" data-tab="mitigation">Mitigation</button>
+                            <button class="tab-btn" data-tab="recommendations">AI Recommendations</button>
+                        </div>
+                    </div>
+
+                    <div class="analysis-content">
+                        <div class="tab-content active" id="current-threats">
+                            <div class="threat-info">
+                                <h4>Active Threat: <span class="threat-name">DDoS Attack - Tokyo</span></h4>
+                                <div class="threat-metrics">
+                                    <div class="metric">
+                                        <span class="metric-label">Severity:</span>
+                                        <span class="metric-value critical">Critical</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label">Target:</span>
+                                        <span class="metric-value">Financial Services</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label">Duration:</span>
+                                        <span class="metric-value">18 minutes</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-content" id="mitigation-steps">
+                            <div class="mitigation-list">
+                                <h4>Recommended Mitigation Steps:</h4>
+                                <ol>
+                                    <li>Activate DDoS mitigation service</li>
+                                    <li>Block traffic from identified malicious IP ranges</li>
+                                    <li>Increase bandwidth capacity temporarily</li>
+                                    <li>Monitor for application-layer attacks</li>
+                                    <li>Implement rate limiting on critical endpoints</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="tab-content" id="ai-recommendations">
+                            <div class="ai-recommendation">
+                                <h4>AI Security Recommendation:</h4>
+                                <p>Our AI has detected a coordinated botnet attack pattern. Consider implementing
+                                    advanced behavioral analysis to distinguish between legitimate users and bots.</p>
+                                <div class="confidence-level">
+                                    <span>Confidence: 94%</span>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" style="width: 94%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Threat Map Section Styles */
+    .threatmap-section {
+        background: linear-gradient(135deg, #0c0e27 0%, #1a1f3a 100%);
+        color: #ffffff;
+        padding: 2rem;
+        border-radius: 20px;
+        margin: 2rem 0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(0, 245, 255, 0.1);
+    }
+
+    .threatmap-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .threatmap-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .threatmap-title {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: linear-gradient(90deg, #00f5ff, #8a2be2);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .threatmap-subtitle {
+        color: #b0b0d0;
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .threatmap-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .scan-btn {
+        background: linear-gradient(135deg, #00f5ff, #8a2be2);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 245, 255, 0.3);
+    }
+
+    .scan-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 245, 255, 0.4);
+    }
+
+    .filter-controls {
+        display: flex;
+        gap: 10px;
+    }
+
+    .threat-filter,
+    .refresh-btn {
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 245, 255, 0.3);
+        background: rgba(255, 255, 255, 0.05);
+        color: #ffffff;
+        cursor: pointer;
+    }
+
+    .refresh-btn {
+        background: rgba(0, 245, 255, 0.1);
+    }
+
+    /* Threat Visualization */
+    .threatmap-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    .threat-visualization {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .globe-container {
+        position: relative;
+        background: rgba(16, 18, 46, 0.7);
+        border-radius: 20px;
+        padding: 2rem;
+        border: 1px solid rgba(0, 245, 255, 0.2);
+        box-shadow: 0 0 30px rgba(0, 242, 254, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 350px;
+    }
+
+    .pulsing-globe {
+        position: relative;
+        width: 220px;
+        height: 220px;
+    }
+
+    .globe-core {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #1a237e, #0c0e27);
+        position: relative;
+        box-shadow:
+            inset 0 0 50px rgba(0, 0, 0, 0.8),
+            0 0 0 2px rgba(0, 245, 255, 0.3),
+            0 0 30px rgba(0, 245, 255, 0.2);
+        animation: rotate 60s infinite linear;
+    }
+
+    @keyframes rotate {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .globe-grid {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background:
+            radial-gradient(circle at center, transparent 60%, rgba(0, 245, 255, 0.1) 100%),
+            repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0, 245, 255, 0.1) 20px),
+            repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(0, 245, 255, 0.1) 20px);
+    }
+
+    .threat-pulses {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .threat-pulse {
+        position: absolute;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translate(-50%, -50%) scale(3);
+            opacity: 0;
+        }
+    }
+
+    .threat-pulse.critical {
+        background: #ff2a6d;
+        box-shadow: 0 0 10px #ff2a6d;
+        width: 12px;
+        height: 12px;
+    }
+
+    .threat-pulse.high {
+        background: #ffcc00;
+        box-shadow: 0 0 10px #ffcc00;
+        width: 10px;
+        height: 10px;
+    }
+
+    .threat-pulse.medium {
+        background: #05d9e8;
+        box-shadow: 0 0 10px #05d9e8;
+        width: 8px;
+        height: 8px;
+    }
+
+    .threat-pulse.low {
+        background: #2ed573;
+        box-shadow: 0 0 10px #2ed573;
+        width: 6px;
+        height: 6px;
+    }
+
+    .threat-legend {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 245, 255, 0.2);
+    }
+
+    .threat-legend h4 {
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+    }
+
+    .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    .legend-dot.critical {
+        background: #ff2a6d;
+    }
+
+    .legend-dot.high {
+        background: #ffcc00;
+    }
+
+    .legend-dot.medium {
+        background: #05d9e8;
+    }
+
+    .legend-dot.low {
+        background: #2ed573;
+    }
+
+    /* Threat Stats */
+    .threat-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .stat-card {
+        background: rgba(16, 18, 46, 0.7);
+        border-radius: 15px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border: 1px solid rgba(0, 245, 255, 0.2);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .stat-icon.critical {
+        background: rgba(255, 42, 109, 0.2);
+        color: #ff2a6d;
+    }
+
+    .stat-icon.high {
+        background: rgba(255, 204, 0, 0.2);
+        color: #ffcc00;
+    }
+
+    .stat-icon.medium {
+        background: rgba(5, 217, 232, 0.2);
+        color: #05d9e8;
+    }
+
+    .stat-info h3 {
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+    }
+
+    .stat-info p {
+        font-size: 0.9rem;
+        color: #b0b0d0;
+    }
+
+    .stat-trend {
+        margin-left: auto;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .stat-trend.up {
+        color: #ff2a6d;
+    }
+
+    .stat-trend.down {
+        color: #2ed573;
+    }
+
+    /* Threat Details */
+    .threat-details {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .threat-log-container,
+    .threat-analysis {
+        background: rgba(16, 18, 46, 0.7);
+        border-radius: 20px;
+        padding: 1.5rem;
+        border: 1px solid rgba(0, 245, 255, 0.2);
+        box-shadow: 0 0 20px rgba(0, 242, 254, 0.1);
+    }
+
+    .log-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .log-header h3 {
+        font-size: 1.3rem;
+    }
+
+    .live-indicator {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #ff2a6d;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .live-indicator i {
+        animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.3;
+        }
+    }
+
+    .threat-log {
+        height: 200px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .log-entry {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        padding: 15px;
+        border-left: 4px solid #00f5ff;
+        transition: all 0.3s ease;
+    }
+
+    .log-entry:hover {
+        transform: translateX(5px);
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .log-entry.critical {
+        border-left-color: #ff2a6d;
+    }
+
+    .log-entry.high {
+        border-left-color: #ffcc00;
+    }
+
+    .log-entry.medium {
+        border-left-color: #05d9e8;
+    }
+
+    .entry-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .threat-type {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .threat-type.critical {
+        color: #ff2a6d;
+    }
+
+    .threat-type.high {
+        color: #ffcc00;
+    }
+
+    .threat-type.medium {
+        color: #05d9e8;
+    }
+
+    .threat-time {
+        font-size: 0.85rem;
+        color: #b0b0d0;
+    }
+
+    .threat-location {
+        font-size: 0.9rem;
+        color: #b0b0d0;
+        margin-bottom: 5px;
+    }
+
+    .threat-desc {
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    /* Threat Analysis */
+    .analysis-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .analysis-header h3 {
+        font-size: 1.3rem;
+    }
+
+    .analysis-tabs {
+        display: flex;
+        gap: 10px;
+    }
+
+    .tab-btn {
+        background: transparent;
+        border: 1px solid rgba(0, 245, 255, 0.3);
+        color: #b0b0d0;
+        padding: 8px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .tab-btn.active {
+        background: rgba(0, 245, 255, 0.2);
+        color: #00f5ff;
+        border-color: #00f5ff;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .threat-info h4 {
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .threat-name {
+        color: #00f5ff;
+    }
+
+    .threat-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .metric {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .metric-label {
+        font-size: 0.9rem;
+        color: #b0b0d0;
+    }
+
+    .metric-value {
+        font-weight: 600;
+    }
+
+    .metric-value.critical {
+        color: #ff2a6d;
+    }
+
+    .mitigation-list h4 {
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .mitigation-list ol {
+        margin-left: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .mitigation-list li {
+        margin-bottom: 0.5rem;
+    }
+
+    .ai-recommendation h4 {
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .ai-recommendation p {
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    .confidence-level {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .confidence-bar {
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .confidence-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #00f5ff, #8a2be2);
+        border-radius: 4px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .threatmap-content {
+            grid-template-columns: 1fr;
+        }
+
+        .threat-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .threatmap-section {
+            padding: 1.5rem;
+        }
+
+        .threatmap-title {
+            font-size: 1.8rem;
+        }
+
+        .threatmap-controls {
+            flex-direction: column;
+        }
+
+        .threat-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .analysis-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .threat-metrics {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    // Sample threat data
+    const threats = [
+        { type: 'DDoS Attack', severity: 'critical', location: 'Tokyo, Japan', time: '12:45:23', desc: 'Large-scale DDoS targeting financial infrastructure' },
+        { type: 'Ransomware', severity: 'critical', location: 'New York, USA', time: '12:42:11', desc: 'Ryuk ransomware detected in corporate network' },
+        { type: 'Data Breach', severity: 'high', location: 'London, UK', time: '12:39:05', desc: 'Sensitive customer data exfiltration detected' },
+        { type: 'Phishing Campaign', severity: 'medium', location: 'Sydney, Australia', time: '12:35:47', desc: 'Targeted phishing campaign against employees' },
+        { type: 'Malware', severity: 'high', location: 'Berlin, Germany', time: '12:32:29', desc: 'Emotet malware variant spreading through network' }
+    ];
+
+    // Threat coordinates for the globe
+    const threatCoords = [
+        { x: 75, y: 35, severity: 'critical' }, // Tokyo
+        { x: 30, y: 45, severity: 'critical' }, // New York
+        { x: 50, y: 48, severity: 'high' }, // London
+        { x: 80, y: 70, severity: 'medium' }, // Sydney
+        { x: 55, y: 48, severity: 'high' }  // Berlin
+    ];
+
+    // Initialize the threat map
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add threat pulses to the globe
+        const threatPulses = document.querySelector('.threat-pulses');
+        threatCoords.forEach(coord => {
+            const pulse = document.createElement('div');
+            pulse.className = `threat-pulse ${coord.severity}`;
+            pulse.style.left = `${coord.x}%`;
+            pulse.style.top = `${coord.y}%`;
+            threatPulses.appendChild(pulse);
+        });
+
+        // Add log entries
+        const threatLog = document.getElementById('threatLog');
+        threats.forEach(threat => {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${threat.severity}`;
+            entry.innerHTML = `
+            <div class="entry-header">
+                <div class="threat-type ${threat.severity}">${threat.type}</div>
+                <div class="threat-time">${threat.time}</div>
+            </div>
+            <div class="threat-location">${threat.location}</div>
+            <div class="threat-desc">${threat.desc}</div>
+        `;
+            threatLog.appendChild(entry);
+        });
+
+        // Tab functionality
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const tabId = this.getAttribute('data-tab');
+
+                // Update active tab button
+                tabBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // Show active tab content
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `${tabId}-${tabId === 'current' ? 'threats' : tabId === 'mitigation' ? 'steps' : 'recommendations'}`) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Scan button functionality
+        document.getElementById('scanBtn').addEventListener('click', function () {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing Threats...';
+            this.disabled = true;
+
+            // Simulate scanning process
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+
+                // Add a new threat to demonstrate real-time updates
+                const newThreat = {
+                    type: 'Zero-Day Exploit',
+                    severity: 'critical',
+                    location: 'Paris, France',
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                    desc: 'Previously unknown vulnerability being actively exploited'
+                };
+
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${newThreat.severity}`;
+                entry.innerHTML = `
+                <div class="entry-header">
+                    <div class="threat-type ${newThreat.severity}">${newThreat.type}</div>
+                    <div class="threat-time">${newThreat.time}</div>
+                </div>
+                <div class="threat-location">${newThreat.location}</div>
+                <div class="threat-desc">${newThreat.desc}</div>
+            `;
+                threatLog.insertBefore(entry, threatLog.firstChild);
+
+                // Add a new pulse to the globe
+                const pulse = document.createElement('div');
+                pulse.className = `threat-pulse ${newThreat.severity}`;
+                pulse.style.left = '58%';
+                pulse.style.top = '48%';
+                threatPulses.appendChild(pulse);
+
+                // Update critical threats count
+                document.querySelector('.stat-card:nth-child(1) h3').textContent = '25';
+
+                // Show success message
+                alert('AI Threat Analysis Complete! 1 new critical threat detected.');
+            }, 3000);
+        });
+
+        // Refresh button functionality
+        document.getElementById('refreshBtn').addEventListener('click', function () {
+            this.classList.add('rotating');
+            setTimeout(() => {
+                this.classList.remove('rotating');
+                alert('Threat data updated!');
+            }, 1000);
+        });
+    });
+</script>
+</section>
+<!-- Threat Analysis Script -->
+<script>
+    const threatLog = document.getElementById("threatLog");
+    const attacks = ["DDoS", "Phishing Attempt", "Ransomware Payload", "Zero-day Exploit"];
+    const analysisSteps = [
+        "Initializing Neural Network...",
+        "Cross-referencing Blockchain Ledger for known malicious hashes...",
+        "Analyzing real-time IoT packet metadata...",
+        "Anomaly scoring complete."
+    ];
+
+    // Removed: All Device Management Logic and related button event listeners.
+
+    function addLogEntry(text) {
+        threatLog.textContent = text + "\n" + threatLog.textContent;
+    }
+
+    function scanForThreats() {
+        // Clear previous log for a clean run
+        threatLog.textContent = "";
+
+        // Step 1: Show AI analysis start
+        addLogEntry("🧠 AI Threat Engine: Analysis Started...");
+
+        // Simulate analysis steps
+        let stepDelay = 1500;
+        let totalDelay = 0;
+
+        analysisSteps.forEach((step, index) => {
+            totalDelay += stepDelay;
+            setTimeout(() => {
+                addLogEntry(`[${new Date().toLocaleTimeString()}] ⚙️ ${step}`);
+            }, totalDelay);
+        });
+
+        // Step 2: Detect and neutralize a threat after analysis
+        setTimeout(() => {
+            const detectedAttack = attacks[Math.floor(Math.random() * attacks.length)];
+            // 70% chance of threat detection/neutralization, 30% chance of clean report
+            const status = Math.random() > 0.3 ? 'Detected' : 'Neutralized (No Threat)';
+            const statusColor = status.includes('Neutralized') ? '✅' : '⚠️';
+
+            if (status.includes('Detected')) {
+                addLogEntry(`[${new Date().toLocaleTimeString()}] ${statusColor} Threat Detected: ${detectedAttack} on IoT Gateway.`);
+                // Show problem fixed
+                setTimeout(() => {
+                    addLogEntry(`[${new Date().toLocaleTimeString()}] ✅ Threat Neutralized: ${detectedAttack} isolated by Smart Contract.`);
+                }, 3000); // Shorter fix time
+            } else {
+                addLogEntry(`[${new Date().toLocaleTimeString()}] ✅ AI Analysis Concluded: No critical anomalies found. System secured.`);
+            }
+
+        }, totalDelay + stepDelay);
+    }
+
+    // Scan button click
+    document.getElementById("scanBtn").addEventListener("click", scanForThreats);
+</script>
+<section id="console" class="section" style="display: flex; flex-direction: column; align-items: left;">
+    <h2 class="console-heading" style="text-align:left; margin-left:50px;">🖥 SecureChain Console</h2>
+    <div id="consoleOutput" class="glow-box"></div>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%;">
+        <input id="consoleInput" class="input-glow" placeholder="Type a command (help, scan, wallet, block)"
+            style="width:40%; min-width:280px; max-width:600px;" />
+        <button onclick="runConsole()" style="margin-top:10px;">Run</button>
+    </div>
+    <div style="margin-top: 20px;"></div>
+    </div>
+</section>
+<div
+    style="width:50%; max-width:500px; margin:48px auto 32px auto; background:#181a2b; box-shadow:0 0 32px 8px #00f2fe; border-radius:32px; padding:32px 24px; color:#fff; font-size:1.2em;">
+    <div id="consoleOutput" class="glow-box"
+        style="min-height:120px; display:flex; align-items:flex-start; justify-content:flex-start; font-size:1.3em;">
+        <span id="consoleLoading"
+            style="font-size:1.1em; color:#fff; background:none; border-radius:0; padding:0; margin:0; transition:none; cursor:default;">SecureChain
+            Console Loading...</span>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<section id="contact" class="section contact">
+    <h2 class="contact-heading">📬 Contact Us</h2>
+    <br>
+    <form id="contactForm">
+        <input name="name" placeholder="Your Name" required />
+        <input name="email" type="email" placeholder="Email" required />
+        <textarea name="message" placeholder="Message"></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+    <div id="formStatus"></div>
+</section>
+<footer>© 2025 SecureChain | Powered by Blockchain + AI</footer>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-router-dom@6/umd/react-router-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/framer-motion/dist/framer-motion.umd.js"></script>
+<script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+<script src="https://unpkg.com/react-simple-maps@3.0.0/dist/react-simple-maps.umd.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<div id="authModal"
+    style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7);">
+    <div
+        style="background:#181a2b; margin:10% auto; padding:32px 24px; border-radius:16px; max-width:350px; box-shadow:0 0 32px #00f2fe; text-align:center; position:relative;">
+        <span id="closeAuth"
+            style="position:absolute; top:12px; right:18px; font-size:24px; cursor:pointer; color:#ff2d2d;">&times;</span>
+
+        <div id="authContent">
+        </div>
+
+    </div>
+</div>
+<div id="statusModal"
+    style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7);">
+    <div
+        style="background:#181a2b; margin:15% auto; padding:32px 24px; border-radius:16px; max-width:450px; box-shadow:0 0 32px #00f2fe; text-align:center; position:relative;">
+        <span id="closeStatus" onclick="closeSystemStatusModal()"
+            style="position:absolute; top:12px; right:18px; font-size:24px; cursor:pointer; color:#fff;">&times;</span>
+        <h2 style="color:#00f2fe; margin-bottom: 20px;">⚙️ SecureChain Status Center</h2>
+        <div id="systemStatusContent"
+            style="text-align: left; font-family: monospace; color: #00e6e6; padding: 15px; background: #0d0d2b; border: 1px solid #00e6e6; border-radius: 8px; min-height: 100px;">
+            <p style="color:#fff;"><strong>Initiating system check...</strong></p>
+        </div>
+        <button onclick="closeSystemStatusModal()"
+            style="width:100%; margin-top:24px; padding:10px; border-radius:8px; border:none; background:linear-gradient(90deg,#00f2fe,#4facfe); color:#fff; font-size:16px; font-weight:600; cursor:pointer;">Close</button>
+    </div>
+</div>
+<div id="custom-alert-container" class="fixed top-4 right-4 z-[1001] pointer-events-none"></div>
+
+<script>
+    // --- CUSTOM ALERT BOX IMPLEMENTATION (Replacing all 'alert()') ---
+    const alertBox = {
+        element: null,
+        init: function () {
+            this.container = document.getElementById('custom-alert-container');
+        },
+        show: function (message, type = 'info') {
+            if (!this.container) this.init();
+
+            let bgColor = 'bg-[#4facfe]'; // Default blue
+            let icon = 'ℹ️';
+
+            if (type === 'error') {
+                bgColor = 'bg-red-600';
+                icon = '❌';
+            } else if (type === 'success') {
+                bgColor = 'bg-green-600';
+                icon = '✅';
+            } else if (type === 'warning') {
+                bgColor = 'bg-yellow-600';
+                icon = '⚠️';
+            }
+
+            // Create the alert element
+            const alertEl = document.createElement('div');
+            alertEl.className = `p-4 mt-2 rounded-lg shadow-xl text-white font-semibold transition-all duration-500 opacity-0 transform translate-x-10 ${bgColor} max-w-sm`;
+            alertEl.innerHTML = `<div class="flex items-center space-x-2"><span class="text-xl">${icon}</span><span>${message}</span></div>`;
+
+            this.container.appendChild(alertEl);
+
+            // Animate in
+            setTimeout(() => {
+                alertEl.classList.remove('opacity-0', 'translate-x-10');
+                alertEl.classList.add('opacity-100', 'translate-x-0');
+            }, 10); // Small delay to ensure transition works
+
+            // Animate out and remove after 4 seconds
+            setTimeout(() => {
+                alertEl.classList.remove('opacity-100', 'translate-x-0');
+                alertEl.classList.add('opacity-0', 'translate-x-10');
+                // Remove from DOM after transition
+                setTimeout(() => alertEl.remove(), 500);
+            }, 4000);
+        }
+    };
+    // Initialize the alert box
+    document.addEventListener('DOMContentLoaded', () => {
+        alertBox.init();
+    });
+
+    // --- AUTH FORMS HTML TEMPLATES ---
+    const loginTemplate = `
+            <h2 style="color:#fff;" id="authTitle">User Login</h2>
+            <form id="authForm" data-mode="login">
+                <input type="email" placeholder="Email" required name="email" autocomplete="email"
+                    style="width:90%; margin:12px 0; padding:10px; border-radius:8px; border:none; background:#222; color:#fff; font-size:16px;" />
+                <input type="password" placeholder="Password" required name="password" autocomplete="current-password"
+                    style="width:90%; margin:12px 0; padding:10px; border-radius:8px; border:none; background:#222; color:#fff; font-size:16px;" />
+                <button type="submit"
+                    style="width:100%; margin-top:16px; padding:10px; border-radius:8px; border:none; background:linear-gradient(90deg,#00f2fe,#4facfe); color:#fff; font-size:16px; font-weight:600; cursor:pointer; box-shadow:0 0 8px #00f2fe;">Login</button>
+            </form>
+            <p class="text-sm mt-4 text-gray-400">
+                Don't have an account? <a href="#" onclick="showAuth('signup')" class="text-[#00f2fe] hover:text-[#4facfe] font-medium transition-colors">Sign Up</a>
+            </p>
+        `;
+
+    const signupTemplate = `
+            <h2 style="color:#fff;" id="authTitle">Create Account</h2>
+            <form id="authForm" data-mode="signup">
+                <input type="text" placeholder="Username (Optional)" name="username" autocomplete="username"
+                    style="width:90%; margin:12px 0; padding:10px; border-radius:8px; border:none; background:#222; color:#fff; font-size:16px;" />
+                <input type="email" placeholder="Email" required name="email" autocomplete="email"
+                    style="width:90%; margin:12px 0; padding:10px; border-radius:8px; border:none; background:#222; color:#fff; font-size:16px;" />
+                <input type="password" placeholder="Password" required name="password" autocomplete="new-password"
+                    style="width:90%; margin:12px 0; padding:10px; border-radius:8px; border:none; background:#222; color:#fff; font-size:16px;" />
+                <button type="submit"
+                    style="width:100%; margin-top:16px; padding:10px; border-radius:8px; border:none; background:linear-gradient(90deg,#00f2fe,#4facfe); color:#fff; font-size:16px; font-weight:600; cursor:pointer; box-shadow:0 0 8px #00f2fe;">Sign Up</button>
+            </form>
+             <p class="text-sm mt-4 text-gray-400">
+                Already have an account? <a href="#" onclick="showAuth('login')" class="text-[#00f2fe] hover:text-[#4facfe] font-medium transition-colors">Login</a>
+            </p>
+        `;
+
+    // --- AUTH MODAL HANDLERS ---
+
+    /** Shows the modal with the specified form (login or signup) */
+    function showAuth(mode = 'login') {
+        const authContent = document.getElementById('authContent');
+        if (mode === 'signup') {
+            authContent.innerHTML = signupTemplate;
+        } else {
+            authContent.innerHTML = loginTemplate;
+        }
+
+        // Re-attach the submit listener after content is loaded
+        document.getElementById('authForm').onsubmit = handleAuthSubmit;
+
+        // Show the modal container
+        document.getElementById('authModal').style.display = 'block';
+    }
+
+    document.getElementById('closeAuth').onclick = function () {
+        document.getElementById('authModal').style.display = 'none';
+    };
+    window.onclick = function (event) {
+        if (event.target == document.getElementById('authModal')) {
+            document.getElementById('authModal').style.display = 'none';
+        }
+    };
+
+    /** Handles form submission for both login and signup */
+    async function handleAuthSubmit(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const mode = form.dataset.mode; // 'login' or 'signup'
+        const email = form.elements.namedItem('email')?.value;
+        const password = form.elements.namedItem('password')?.value;
+        const username = form.elements.namedItem('username')?.value;
+
+        if (!email || !password) {
+            return alertBox.show("Email and password are required.", 'error');
+        }
+
+        // --- REAL API CALL USING FETCH ---
+        console.log(`--- ${mode.toUpperCase()} ATTEMPT ---`);
+        console.log("Email:", email);
+        if (mode === 'signup') console.log("Username:", username || 'N/A');
+
+        const endpoint = mode === 'login' ? 'http://127.0.0.1:5501/api/login' : 'http://127.0.0.1:5501/api/signup';
+        const body = { email, password };
+        if (mode === 'signup') {
+            body.username = username;
+        }
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                if (mode === 'login') {
+                    // Assuming the backend returns a token and username
+                    localStorage.setItem("access_token", data.access_token);
+                    if (data.username) {
+                        localStorage.setItem("username", data.username);
+                    }
+                    alertBox.show("Login successful!", 'success');
+                    document.getElementById('authModal').style.display = 'none';
+                    // Update the UI to reflect the logged-in state
+                    updateAuthUI();
+                } else if (mode === 'signup') {
+                    alertBox.show(data.message || "Account created! Please log in.", 'success');
+                    // Switch to the login form after successful signup
+                    showAuth('login');
+                }
+            } else {
+                // Handle errors from the backend (e.g., "User not found", "Incorrect password")
+                alertBox.show(data.message || "An unknown error occurred.", 'error');
+            }
+
+        } catch (error) {
+            // This catch block handles network errors (e.g., server is down)
+            console.error("Authentication fetch error:", error);
+            alertBox.show("Authentication error: Could not connect to the server.", 'error');
+        }
+    };
+
+    /** Updates the header buttons based on login state */
+    function updateAuthUI() {
+        const authActions = document.getElementById('authActions');
+        const token = localStorage.getItem('access_token');
+        const username = localStorage.getItem('username');
+
+        if (token) {
+            // User is logged in
+            // Use the stored username, or "User" as a fallback
+            authActions.innerHTML = `
+                    <span style="color: white; margin-right: 15px;">Welcome, ${username || 'User'}</span>
+                    <button onclick="handleLogout()" style="background-color: #ff4d4d;">Logout</button>
+                `;
+        } else {
+            // User is logged out
+            authActions.innerHTML = `
+                    <button class="fax" id="themeToggle" onclick="toggleTheme()">🌙</button>
+                    <button onclick="location.href='login.html'">Login / Sign Up</button>
+                `;
+        }
+    }
+
+    function handleLogout() {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('username');
+        updateAuthUI();
+        alertBox.show("You have been logged out.", 'info');
+    }
+
+    // PHISHING URL SCANNER LOGIC (EXISTING)
+    function scanUrl() {
+        const url = document.getElementById('urlInput').value;
+        const resultEl = document.getElementById('urlResult');
+        if (!url) {
+            resultEl.textContent = 'Please enter a URL.';
+            resultEl.style.color = '#ffae42';
+            return;
+        }
+        resultEl.textContent = 'Scanning...';
+        resultEl.style.color = '#4cafef';
+        setTimeout(() => {
+            const blacklist = ['paypa1.com', 'microsft.com', 'secure-login-bank.com'];
+            try {
+                const domain = new URL(url).hostname.replace('www.', '');
+                if (blacklist.includes(domain)) {
+                    resultEl.textContent = '⛔ MALICIOUS: Known phishing site!';
+                    resultEl.style.color = '#ff4d4d';
+                } else if (url.includes('@') || (url.match(/\./g) || []).length > 3) {
+                    resultEl.textContent = '⚠️ SUSPICIOUS: URL contains unusual patterns.';
+                    resultEl.style.color = '#ffae42';
+                } else {
+                    resultEl.textContent = '✅ SAFE: URL appears to be safe.';
+                    resultEl.style.color = '#00e6e6';
+                }
+            } catch (e) {
+                resultEl.textContent = 'Invalid URL format.';
+                resultEl.style.color = '#ff4d4d';
+            }
+        }, 1000);
+    }
+
+    // --- SYSTEM STATUS MODAL HANDLERS (EXISTING) ---
+    function closeSystemStatusModal() {
+        document.getElementById('statusModal').style.display = 'none';
+    }
+
+    function openSystemStatusModal() {
+        const modal = document.getElementById('statusModal');
+        const content = document.getElementById('systemStatusContent');
+        modal.style.display = 'block';
+
+        // Reset and start check
+        content.innerHTML = '<p style="color:#fff;"><strong>Initiating system check...</strong></p>';
+
+        // Simulated Check Process
+        const services = [
+            { name: 'AI Threat Engine', delay: 1500, status: 'Operational', color: '#00e666' },
+            { name: 'Blockchain Ledger Sync', delay: 2800, status: 'Operational', color: '#00e666' },
+            { name: 'IoT Registrar', delay: 4000, status: 'Degraded', color: '#ffae42' },
+            { name: 'Quantum Encryption Module', delay: 5000, status: 'Operational', color: '#00e666' }
+        ];
+
+        let log = '';
+
+        function updateStatus(index) {
+            if (index >= services.length) {
+                log += '<br><strong style="color: #00f2fe;">[FINAL] All checks complete.</strong>';
+                content.innerHTML = log;
+                return;
+            }
+
+            const service = services[index];
+            const startTime = Date.now();
+
+            // Show "Checking..." for the current service
+            log = log.substring(0, log.lastIndexOf('<p')) + `<p style="color:#fff; margin-bottom: 5px;">Checking ${service.name}...</p>`;
+            content.innerHTML = log;
+
+            setTimeout(() => {
+                // Replace "Checking..." with the final status
+                const statusText = service.status === 'Degraded' ? `⚠️ <strong>${service.status}</strong>` : `✅ <strong>${service.status}</strong>`;
+
+                log = log.substring(0, log.lastIndexOf('<p')) + `<p style="color:${service.color}; margin-bottom: 5px;">${statusText} ${service.name} (${(Date.now() - startTime) / 1000}s)</p>`;
+                content.innerHTML = log;
+
+                // Move to the next service
+                updateStatus(index + 1);
+            }, service.delay - (index > 0 ? services[index - 1].delay : 0)); // Calculate differential delay
+        }
+
+        // Start the simulated check sequence
+        updateStatus(0);
+    }
+
+    // Add modal closure for clicking outside the modal
+    window.addEventListener('click', function (event) {
+        const statusModal = document.getElementById('statusModal');
+        if (event.target == statusModal) {
+            closeSystemStatusModal();
+        }
+    });
+    // --- AI CHATBOT LOGIC (EXISTING) ---
+    document.addEventListener('DOMContentLoaded', function () {
+        const chatToggle = document.getElementById('chatToggle');
+        const chatWindow = document.getElementById('chatWindow');
+        const chatClose = document.getElementById('chatClose');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatMessages = document.getElementById('chatMessages');
+
+        // 1. CHAT WINDOW TOGGLE
+        chatToggle.addEventListener('click', () => {
+            chatWindow.classList.toggle('chat-closed');
+            if (!chatWindow.classList.contains('chat-closed')) {
+                // Scroll to bottom when opening
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+
+        chatClose.addEventListener('click', () => {
+            chatWindow.classList.add('chat-closed');
+        });
+
+        // 2. MESSAGE SENDING SETUP
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function createMessage(text, sender = 'user') {
+            const messageEl = document.createElement('div');
+            messageEl.classList.add('chat-message', sender);
+            // Use innerHTML to allow for simple bold/br tags in the response
+            messageEl.innerHTML = text;
+            chatMessages.appendChild(messageEl);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function generateResponse(message) {
+            const lowerMsg = message.toLowerCase().trim();
+            let response = "";
+
+            if (lowerMsg.includes("explain project") || lowerMsg.includes("what is securechain")) {
+                response = "🔐 <b>SecureChain</b> is an AI-Powered Blockchain Security Platform. It combines <b>AI-driven threat detection</b>, <b>encrypted storage</b>, <b>IoT trust</b>, and <b>NFT validation</b> to create a next-gen decentralized cybersecurity ecosystem. Think of it as a decentralized security operating system.";
+            } else if (lowerMsg.includes("features")) {
+                response = "<b>SecureChain's Core Features:</b><br><br>" +
+                    "1. <b>Encrypted Storage:</b> Highly secure, protected storage.<br>" +
+                    "2. <b>AI Threat Detection:</b> Real-time anomaly detection using Machine Learning.<br>" +
+                    "3. <b>IoT Trust Registrar:</b> A secure, decentralized registry for IoT devices.<br>" +
+                    "4. <b>NFT Cert Validator:</b> Validates identity and certificates using NFTs.<br>" +
+                    "5. <b>Quantum Encryption:</b> Advanced methods resistant to quantum computing.<br>" +
+                    "6. <b>Security Analytics:</b> Data-driven insights into your security posture.<br><br>" +
+                    "Is there a specific feature you'd like to know more about?";
+            } else if (lowerMsg.includes("services") || lowerMsg.includes("functions") || lowerMsg.includes("can you do")) {
+                // CORRECTED SERVICES LIST
+                response = "<b>SecureChain Services & Functions:</b><br><br>" +
+                    "1. <b>Threat Scan:</b> Run a dedicated scan for network and device threats.<br>" +
+                    "2. <b>Register IoT:</b> Register and secure a new IoT device on the trust network.<br>" +
+                    "3. <b>Verify NFT:</b> Validate the authenticity of an NFT certificate.<br>" +
+                    "4. <b>Blockchain Vault:</b> Quantum-Encrypted Decentralized Storage.<br>" +
+                    "5. <b>Auto-Quarantine:</b> Automatically isolate compromised devices from the network.<br>" +
+                    "6. <b>Security Dashboard:</b> View real-time security metrics and system status.<br>" +
+                    "7. <b>Audit Contract:</b> Use AI to audit smart contracts for vulnerabilities.<br>" +
+                    "8. <b>Scan URL:</b> Check a link for phishing or known malicious content.<br><br>" +
+                    "Try asking me to 'Explain Risk Score' or 'What is Auto-Quarantine'.";
+            } else if (lowerMsg.includes("risk score") || lowerMsg.includes("prs")) {
+                // NEW DEDICATED ANSWER
+                response = "📈 The <b>Risk Score (PRS)</b> service calculates a real-time Personal Risk Score based on factors like device health, login patterns, and network vulnerabilities. This score helps you quickly assess and mitigate your current security exposure.";
+            } else if (lowerMsg.includes("auto-quarantine") || lowerMsg.includes("quarantine")) {
+                // NEW DEDICATED ANSWER
+                response = "🚨 The <b>Auto-Quarantine</b> service utilizes smart contracts to automatically and instantly isolate any device detected by the AI Threat Engine as compromised. This prevents lateral movement of threats across your network.";
+            } else if (lowerMsg.includes("security dashboard") || lowerMsg.includes("dashboard")) {
+                response = "📊 The <b>Security Dashboard</b> service provides a consolidated, real-time view of your network's security posture. It displays key metrics, recent alerts from the AI Threat Engine, and the overall status of your registered devices and connections. It's your central hub for monitoring.";
+            } else if (lowerMsg.includes("system status") || lowerMsg.includes("status")) {
+                response = "⚙️ The <b>System Status</b> check gives you an immediate report on the operational health and uptime of core SecureChain modules, including the AI Threat Engine, Blockchain Ledger Sync, and IoT Registrar. This ensures you know all platform services are running optimally.";
+            } else if (lowerMsg.includes("hello") || lowerMsg.includes("hi") || lowerMsg.includes("hey")) {
+                // Improved greeting trigger
+                response = "Hello! I'm the <b>SecureChain Assistant</b>. How can I help you understand our AI and Blockchain-powered security platform?";
+            } else if (lowerMsg.includes("threat scan")) {
+                response = "The <b>Threat Scan</b> service allows you to actively run a dedicated scan for network and device vulnerabilities. It uses our AI threat engine to detect anomalies and identify potential attacks (like DDoS or Ransomware).";
+            } else if (lowerMsg.includes("register iot")) {
+                response = "The <b>IoT Trust Registrar</b> service lets you register your IoT devices securely on our decentralized ledger, establishing an immutable <b>Trust Chain</b> for that device, ensuring its data and identity are protected.";
+            } else if (lowerMsg.includes("verify nft")) {
+                response = "The <b>NFT Cert Validator</b> service uses NFTs as unique, immutable certificates of authenticity or identity. You can verify any NFT certificate to ensure it hasn't been tampered with or forged.";
+            } else {
+                response = "I'm sorry, I can only explain the <b>features</b> and <b>services</b> of the SecureChain project. Try asking 'What are the features?' or 'Explain the services'.";
+            }
+
+            // Simulate AI typing delay
+            setTimeout(() => {
+                createMessage(response, 'ai');
+            }, 500);
+        }
+
+        function sendMessage() {
+            const input = chatInput.value.trim();
+            if (input === "") return;
+
+            createMessage(input, 'user');
+            generateResponse(input);
+            chatInput.value = '';
+        }
+    });
+    // --- END AI CHATBOT LOGIC ---
+</script>
+</body>
+
+</html>

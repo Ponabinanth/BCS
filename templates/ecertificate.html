@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Certificate Generator - SecureChain</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .certificate-form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .certificate-preview {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 40px;
+            background: linear-gradient(45deg, #f5f5f5, #e8e8e8);
+            border: 10px solid #2c3e50;
+            border-radius: 15px;
+            text-align: center;
+            font-family: 'Georgia', serif;
+        }
+        
+        .certificate-title {
+            font-size: 36px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .certificate-content {
+            font-size: 18px;
+            line-height: 1.6;
+            margin: 30px 0;
+        }
+        
+        .certificate-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>E-Certificate Generator</h1>
+            <nav>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/ecertificate" class="active">E-Certificate</a>
+                <button onclick="logout()">Logout</button>
+            </nav>
+        </header>
+
+        <main>
+            <div class="certificate-form">
+                <h2>Generate New Certificate</h2>
+                <form id="certificateForm">
+                    <div class="form-group">
+                        <label for="name">Recipient Name:</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="course">Course/Program:</label>
+                        <input type="text" id="course" name="course" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="date">Completion Date:</label>
+                        <input type="date" id="date" name="date">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="issuer">Issuing Organization:</label>
+                        <input type="text" id="issuer" name="issuer" value="SecureChain Academy">
+                    </div>
+                    
+                    <button type="submit">Generate Certificate</button>
+                </form>
+            </div>
+
+            <div id="certificatePreview" class="certificate-preview" style="display: none;">
+                <!-- Certificate preview will be generated here -->
+            </div>
+
+            <div id="certificatesList" style="margin-top: 40px;">
+                <h2>Generated Certificates</h2>
+                <div id="certificatesContainer"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Form submission
+        document.getElementById('certificateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/api/generate-certificate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Certificate generated successfully!');
+                    showCertificatePreview(result.certificate);
+                    loadCertificates();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error generating certificate: ' + error.message);
+            }
+        });
+
+        // Show certificate preview
+        function showCertificatePreview(certificate) {
+            const preview = document.getElementById('certificatePreview');
+            preview.innerHTML = `
+                <div class="certificate-title">CERTIFICATE OF COMPLETION</div>
+                <div class="certificate-content">
+                    This is to certify that
+                    <div class="certificate-name">${certificate.name}</div>
+                    has successfully completed the course
+                    <div><strong>${certificate.course}</strong></div>
+                    on ${certificate.date}
+                </div>
+                <div style="margin-top: 40px;">
+                    <div style="border-top: 2px solid #2c3e50; width: 200px; margin: 0 auto; padding-top: 10px;">
+                        ${certificate.issuer}
+                    </div>
+                </div>
+                <div style="margin-top: 20px; font-size: 14px; color: #666;">
+                    Certificate ID: ${certificate.id}<br>
+                    <a href="/verify-certificate/${certificate.id}" target="_blank">Verify this certificate</a>
+                </div>
+            `;
+            preview.style.display = 'block';
+        }
+
+        // Load certificates
+        async function loadCertificates() {
+            try {
+                const response = await fetch('/api/certificates');
+                const certificates = await response.json();
+                
+                const container = document.getElementById('certificatesContainer');
+                container.innerHTML = '';
+                
+                certificates.forEach(cert => {
+                    const certElement = document.createElement('div');
+                    certElement.className = 'certificate-item';
+                    certElement.style.cssText = `
+                        background: white;
+                        padding: 15px;
+                        margin: 10px 0;
+                        border-radius: 5px;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    `;
+                    certElement.innerHTML = `
+                        <strong>${cert.name}</strong> - ${cert.course}
+                        <br><small>ID: ${cert.id} | Date: ${cert.date}</small>
+                        <br><a href="/verify-certificate/${cert.id}" target="_blank">Verify</a>
+                    `;
+                    container.appendChild(certElement);
+                });
+            } catch (error) {
+                console.error('Error loading certificates:', error);
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+
+        // Load certificates on page load
+        loadCertificates();
+    </script>
+</body>
+</html>

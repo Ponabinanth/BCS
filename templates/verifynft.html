@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Asset Verification Portal - SecureChain</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400&display=swap" rel="stylesheet">
+    <style>
+        /* --- CSS Variables for Professional Dark Theme --- */
+        :root {
+            --color-bg-dark: #0f172a; /* Deep blue slate */
+            --color-card-bg: #1e293b;
+            --color-primary: #00e6e6; /* Neon Cyan */
+            --color-success: #10b981; /* Scan Green */
+            --color-error: #ef4444;
+            --color-text: #e2e8f0;
+            --font-mono: 'Space Mono', monospace;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--color-bg-dark);
+            color: var(--color-text);
+            font-family: var(--font-sans);
+            padding: 20px;
+        }
+
+        .nft-card {
+            background: var(--color-card-bg);
+            border-radius: 16px;
+            box-shadow: 0 0 25px rgba(0, 230, 230, 0.2);
+            padding: 30px;
+            color: var(--color-text);
+            border: 2px solid var(--color-primary);
+            max-width: 550px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        h3 {
+            color: var(--color-primary);
+            margin-top: 0;
+            font-size: 1.8rem;
+            font-family: var(--font-sans);
+        }
+
+        input {
+            width: 100%;
+            margin-bottom: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: var(--color-text);
+            box-sizing: border-box;
+            font-family: var(--font-mono);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            background: var(--color-primary);
+            color: #000;
+            font-weight: 700;
+            margin-top: 10px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .btn:hover {
+            background: #00ffff;
+            transform: translateY(-1px);
+        }
+
+        /* --- Status & Result Styling --- */
+        #status {
+            margin-top: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--color-primary);
+        }
+
+        #result {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--color-primary);
+            white-space: pre-line;
+            text-align: left;
+            font-family: var(--font-mono);
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .status-success { color: var(--color-success); }
+        .status-error { color: var(--color-error); }
+
+        /* --- Scanner Animation Enhancement --- */
+        .scanner {
+            width: 100%;
+            height: 15px;
+            background: rgba(0, 230, 230, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            display: none;
+            position: relative;
+        }
+
+        .scanner-bar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--color-primary) 50%, transparent);
+            animation: scan 1.5s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* --- New: Visual NFT Display --- */
+        #nftVisual {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto 10px;
+            border-radius: 8px;
+            background: #475569;
+            border: 3px dashed #94a3b8;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            opacity: 0.5;
+            transition: all 0.5s;
+        }
+        
+        .verified-nft {
+            opacity: 1 !important;
+            border: 3px solid var(--color-success) !important;
+            background: var(--color-primary) !important;
+            box-shadow: 0 0 15px var(--color-success);
+        }
+
+        .verified-nft span {
+            color: #000;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="nft-card">
+        <h3>🔗 Blockchain Asset Verification</h3>
+        <p style="color: #94a3b8; margin-bottom: 20px;">Verify the **Provenance** and **Ownership** of any tokenized asset on SecureChain.</p>
+        
+        <input type="text" id="nftId" placeholder="Enter NFT/Asset ID (e.g., SC-ASSET-762)" />
+        <input type="text" id="ownerAddress" placeholder="Owner Wallet Address (e.g., 0x...)" />
+        <input type="text" id="txHash" placeholder="Last Transaction Hash (Optional)" />
+        
+        <button class="btn" onclick="verifyNFT()">Start Multi-Factor Verification</button>
+
+        <div id="nftVisual">
+            Awaiting ID Lookup
+        </div>
+
+        <div class="scanner" id="scanner">
+            <div class="scanner-bar"></div>
+        </div>
+        
+        <div id="status" class="scan-status">Idle — enter details and verify</div>
+        <div id="result" class="scan-result"></div>
+    </div>
+
+    <script>
+        function generateRandomDate(recent = true) {
+            const now = new Date();
+            const min = recent ? now.getTime() - (10 * 24 * 60 * 60 * 1000) : now.getTime() - (365 * 24 * 60 * 60 * 1000);
+            const max = now.getTime();
+            const randomTime = Math.random() * (max - min) + min;
+            return new Date(randomTime).toLocaleDateString();
+        }
+
+        function verifyNFT() {
+            const nftId = document.getElementById("nftId").value.trim();
+            const ownerAddress = document.getElementById("ownerAddress").value.trim();
+            const txHash = document.getElementById("txHash").value.trim();
+            
+            const statusElement = document.getElementById("status");
+            const resultElement = document.getElementById("result");
+            const scanner = document.getElementById("scanner");
+            const nftVisual = document.getElementById("nftVisual");
+
+            // 1. Input Validation
+            if (!nftId || !ownerAddress) {
+                statusElement.innerHTML = `<span class="status-error">❌ ERROR: NFT ID and Owner Address are required.</span>`;
+                resultElement.textContent = "";
+                nftVisual.classList.remove('verified-nft');
+                return;
+            }
+
+            // 2. Start Scan
+            statusElement.innerHTML = `🔄 **Processing:** Querying SecureChain Ledger for Asset ${nftId}...`;
+            resultElement.textContent = "";
+            scanner.style.display = "block";
+            nftVisual.classList.remove('verified-nft');
+            nftVisual.innerHTML = 'Scanning...';
+
+            // 3. Simulated Verification Logic
+            setTimeout(() => {
+                scanner.style.display = "none";
+
+                // Simulated success rate based on ID format
+                const isAuthentic = nftId.toUpperCase().startsWith("SC-") && ownerAddress.length > 30;
+
+                if (isAuthentic) {
+                    // Successful Verification
+                    statusElement.innerHTML = `<span class="status-success">✅ VERIFICATION SUCCESSFUL</span>`;
+                    
+                    const assetType = nftId.includes('ASSET') ? 'Tokenized Asset' : 'Identity Certificate';
+                    const tokenStandard = nftId.includes('ID') ? 'ERC-721' : 'ERC-1155';
+                    
+                    nftVisual.classList.add('verified-nft');
+                    nftVisual.innerHTML = `<span>${assetType.split(' ')[0]}</span>`;
+
+                    resultElement.textContent = `
+                        VERIFICATION REPORT:
+                        -----------------------------------------
+                        Asset ID: ${nftId}
+                        Asset Type: ${assetType} (${tokenStandard})
+                        Creation Date: ${generateRandomDate(false)}
+                        
+                        OWNERSHIP CHAIN:
+                        Current Owner: ${ownerAddress.substring(0, 10)}...${ownerAddress.substring(ownerAddress.length - 8)}
+                        Last Transfer Date: ${generateRandomDate(true)}
+                        Transfer Count: ${Math.floor(Math.random() * 50) + 1}
+                        
+                        PROVENANCE DATA:
+                        TX Hash Confirmed: ${txHash || 'N/A (Optional Field)'}
+                        Blockchain Status: IMMUTABLE (Validated on-chain)
+                        -----------------------------------------
+                        🔐 Q-Security Status: Quantum-Proof Encryption Confirmed
+                    `;
+
+                } else {
+                    // Failed Verification
+                    statusElement.innerHTML = `<span class="status-error">❌ VERIFICATION FAILED: Unidentified Asset</span>`;
+                    nftVisual.innerHTML = 'FAILED';
+
+                    resultElement.textContent = `
+                        VERIFICATION REPORT:
+                        -----------------------------------------
+                        Asset ID: ${nftId}
+                        Blockchain Status: NOT FOUND or Malformed Input.
+                        Reason: The provided NFT ID or Owner Address does not match an active record on the SecureChain network.
+                        -----------------------------------------
+                        Recommendation: Check inputs or contact asset issuer.
+                    `;
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>

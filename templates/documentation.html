@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encrypted Storage - SecureChain</title>
+    <style>
+        /* Fused and Enhanced CSS for Encrypted Storage Feature */
+        :root {
+            --color-bg-dark: #070a13; /* Very dark blue/black */
+            --color-bg-card: #111827; /* Darker inner card */
+            --color-primary: #00f5ff; /* Aqua/Neon accent */
+            --color-secondary: #0088cc; /* Darker blue accent */
+            --color-text: #e0e0e0;
+            --color-glow: rgba(0, 245, 255, 0.6);
+        }
+
+        body {
+            background-color: var(--color-bg-dark);
+            color: var(--color-text);
+            /* --- FONT STYLE CHANGE (Kept Sans-serif) --- */
+            font-family: 'Inter', 'Roboto', sans-serif; 
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .feature-detail {
+            max-width: 1200px;
+            width: 90%;
+            margin-top: 50px;
+            padding: 40px;
+            background-color: var(--color-bg-card);
+            border-radius: 15px;
+            box-shadow: 0 0 30px var(--color-glow);
+            border-top: 3px solid var(--color-primary);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--color-primary);
+            text-shadow: 0 0 15px var(--color-glow);
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--color-text);
+            margin-bottom: 40px;
+        }
+
+        .highlight-box {
+            margin: 50px auto;
+            max-width: 800px;
+            padding: 25px;
+            background: rgba(0, 245, 255, 0.08);
+            border-left: 5px solid var(--color-primary);
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .highlight-box h2 {
+            color: var(--color-primary);
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .highlight-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .highlight-box ul li {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* --- New: Encryption Steps Grid --- */
+        .encryption-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .step-card {
+            background-color: #0d121c;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--color-secondary);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .step-card:hover {
+            border-color: var(--color-primary);
+            transform: translateY(-5px);
+        }
+
+        .step-card h3 {
+            color: var(--color-primary);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        /* Footer Styling */
+        footer {
+            margin: 40px 0;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .footer-action-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .footer-action-links a {
+            color: var(--color-text);
+            padding: 15px 30px; /* Slightly larger for emphasis */
+            background-color: var(--color-bg-card);
+            border: 1px solid var(--color-primary);
+            border-radius: 8px; /* Slightly more rounded */
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s, box-shadow 0.3s, transform 0.3s;
+            min-width: 250px; /* Ensure buttons are a good size */
+        }
+
+        .footer-action-links a:hover {
+            background-color: var(--color-primary);
+            color: var(--color-bg-dark);
+            box-shadow: 0 0 15px var(--color-glow); /* More pronounced glow */
+            transform: scale(1.03);
+        }
+        
+        /* Hiding original image grid as it is replaced by technical diagrams/simulator */
+        .images-grid {
+            display: none; 
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="feature-detail">
+        <h1>🔐 Decentralized Encrypted Storage</h1>
+        <p>
+            SecureChain's storage solution combines **AES-256 military-grade encryption** with the **immutability of blockchain**, guaranteeing
+            data integrity, censorship resistance, and complete user control over decryption keys. Your data, locked in the chain.
+        </p>
+
+        <div class="highlight-box">
+            <h2>⚙️ SecureChain Storage Process (Three-Step Security)</h2>
+            <div class="encryption-steps-grid">
+                <div class="step-card">
+                    <h3>1. Client-Side Encryption</h3>
+                    <p>Data is encrypted locally using the user's private key and **AES-256**. The data leaves your device already scrambled.</p>
+                </div>
+                <div class="step-card">
+                    <h3>2. Decentralized Sharding</h3>
+                    <p>The encrypted data is split into multiple shards and stored across a **decentralized network of nodes**, preventing single points of failure.</p>
+                </div>
+                <div class="step-card">
+                    <h3>3. Blockchain Key & Hash Validation</h3>
+                    <p>Only the **storage hash and the access metadata** are recorded on the ledger, validating the data's integrity and securing the decryption key pointer.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="highlight-box">
+            <h2>🚀 Unmatched Security & Compliance</h2>
+            <ul>
+                <li><span style="color: var(--color-primary); font-weight: bold;">✅ Immutability:</span> Once stored, data cannot be deleted or tampered with, meeting regulatory requirements.</li>
+                <li><span style="color: var(--color-primary); font-weight: bold;">✅ Proven Algorithms:</span> Uses industry-standard **AES-256** for encryption and **SHA-256** for hashing.</li>
+                <li><span style="color: var(--color-primary); font-weight: bold;">✅ Enhanced Privacy:</span> True **Zero-Knowledge** architecture—SecureChain nodes cannot read your files.</li>
+                <li><span style="color: var(--color-primary); font-weight: bold;">✅ Disaster Recovery:</span> Built-in data redundancy across the decentralized network ensures near-zero downtime and loss.</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+
+<footer>
+    <div class="footer-action-links">
+        <a href="index.html">⬅ Back to SecureChain Features</a>
+    </div>
+</footer>
+
+</html>

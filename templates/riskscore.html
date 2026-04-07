@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureChain - Risk Score Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --dark-bg: #0d0d2b;
+            --card-bg: #181a2b;
+            --text: #ffffff;
+            --text-light: #b0b0b0;
+            --low-risk: #00e676;
+            --medium-risk: #ff9800;
+            --high-risk: #ff5252;
+            --critical-risk: #d50000;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(79, 172, 254, 0.3);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            font-size: 28px;
+            color: var(--primary);
+            margin-right: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .back-btn {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: var(--dark-bg);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.4);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(79, 172, 254, 0.1);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 25px rgba(0, 242, 254, 0.2);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(79, 172, 254, 0.2);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .risk-score-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        .risk-score {
+            font-size: 72px;
+            font-weight: 700;
+            margin: 10px 0;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .risk-level {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .risk-meter {
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to right, var(--low-risk), var(--medium-risk), var(--high-risk), var(--critical-risk));
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .risk-indicator {
+            position: absolute;
+            top: -5px;
+            width: 10px;
+            height: 30px;
+            background-color: var(--dark-bg);
+            border-radius: 5px;
+            transform: translateX(-50%);
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        .risk-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        .factors-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .factor {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .factor-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .factor-name {
+            font-size: 14px;
+        }
+        
+        .factor-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .factor-bar {
+            height: 8px;
+            background-color: rgba(79, 172, 254, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .factor-progress {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: var(--dark-bg);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);
+        }
+        
+        .recommendations {
+            margin-top: 30px;
+        }
+        
+        .recommendation-list {
+            list-style-type: none;
+        }
+        
+        .recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: rgba(13, 13, 43, 0.5);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .recommendation-icon {
+            margin-right: 15px;
+            color: var(--primary);
+            font-size: 18px;
+        }
+        
+        .recommendation-content h4 {
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        .recommendation-content p {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-low {
+            background-color: var(--low-risk);
+        }
+        
+        .status-medium {
+            background-color: var(--medium-risk);
+        }
+        
+        .status-high {
+            background-color: var(--high-risk);
+        }
+        
+        .status-critical {
+            background-color: var(--critical-risk);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: all 0.5s ease;
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background-color: var(--low-risk);
+            color: var(--dark-bg);
+        }
+        
+        .notification.error {
+            background-color: var(--high-risk);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <h1>SecureChain Risk Score</h1>
+            </div>
+            <button class="back-btn" onclick="window.location.href='index.html'">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+        </header>
+        
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Overall Risk Score</h2>
+                    <span>Updated: Today, 10:30 AM</span>
+                </div>
+                <div class="risk-score-container">
+                    <div class="risk-score" id="riskScore">68</div>
+                    <div class="risk-level" id="riskLevel">Medium Risk</div>
+                    <div class="risk-meter">
+                        <div class="risk-indicator" id="riskIndicator"></div>
+                    </div>
+                    <div class="risk-labels">
+                        <span>Low (0-25)</span>
+                        <span>Medium (26-50)</span>
+                        <span>High (51-75)</span>
+                        <span>Critical (76-100)</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-outline">
+                        <i class="fas fa-download"></i> Export Report
+                    </button>
+                    <button class="btn btn-primary" id="recalculateBtn">
+                        <i class="fas fa-sync-alt"></i> Recalculate
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Risk Factors</h2>
+                    <span>Weighted Impact</span>
+                </div>
+                <div class="factors-grid">
+                    <div class="factor">
+                        <div class="factor-label">
+                            <span class="factor-name">Security Vulnerabilities</span>
+                            <span class="factor-value">24%</span>
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-progress" style="width: 24%; background-color: var(--high-risk);"></div>
+                        </div>
+                    </div>
+                    <div class="factor">
+                        <div class="factor-label">
+                            <span class="factor-name">Compliance Issues</span>
+                            <span class="factor-value">18%</span>
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-progress" style="width: 18%; background-color: var(--medium-risk);"></div>
+                        </div>
+                    </div>
+                    <div class="factor">
+                        <div class="factor-label">
+                            <span class="factor-name">Financial Exposure</span>
+                            <span class="factor-value">15%</span>
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-progress" style="width: 15%; background-color: var(--medium-risk);"></div>
+                        </div>
+                    </div>
+                    <div class="factor">
+                        <div class="factor-label">
+                            <span class="factor-name">Operational Gaps</span>
+                            <span class="factor-value">12%</span>
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-progress" style="width: 12%; background-color: var(--low-risk);"></div>
+                        </div>
+                    </div>
+                    <div class="factor">
+                        <div class="factor-label">
+                            <span class="factor-name">Third-Party Dependencies</span>
+                            <span class="factor-value">10%</span>
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-progress" style="width: 10%; background-color: var(--low-risk);"></div>
+                        </div>
+                    </div>
+                    <div class="factor">
+                        <div class="factor-label">
+                            <span class="factor-name">Market Volatility</span>
+                            <span class="factor-value">8%</span>
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-progress" style="width: 8%; background-color: var(--low-risk);"></div>
+                        </div>
+                    </div>
+                    <div class="factor">
+                        <div class="factor-label">
+                            <span class="factor-name">Regulatory Changes</span>
+                            <span class="factor-value">7%</span>
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-progress" style="width: 7%; background-color: var(--low-risk);"></div>
+                        </div>
+                    </div>
+                    <div class="factor">
+                        <div class="factor-label">
+                            <span class="factor-name">Human Factors</span>
+                            <span class="factor-value">6%</span>
+                        </div>
+                        <div class="factor-bar">
+                            <div class="factor-progress" style="width: 6%; background-color: var(--low-risk);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Risk Trend</h2>
+                    <span>Last 12 Months</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="riskTrendChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Risk Distribution</h2>
+                    <span>By Category</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="riskDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card recommendations">
+            <div class="card-header">
+                <h2 class="card-title">Risk Mitigation Recommendations</h2>
+                <span>Priority Actions</span>
+            </div>
+            <ul class="recommendation-list">
+                <li class="recommendation-item">
+                    <div class="recommendation-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h4><span class="status-indicator status-high"></span>Address Critical Security Vulnerabilities</h4>
+                        <p>Patch the 3 high-severity vulnerabilities identified in the latest security scan. These vulnerabilities could lead to unauthorized access to sensitive data.</p>
+                    </div>
+                </li>
+                <li class="recommendation-item">
+                    <div class="recommendation-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h4><span class="status-indicator status-medium"></span>Update Compliance Documentation</h4>
+                        <p>Complete the pending documentation for GDPR and SOC2 compliance requirements. Missing documentation could result in regulatory penalties.</p>
+                    </div>
+                </li>
+                <li class="recommendation-item">
+                    <div class="recommendation-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h4><span class="status-indicator status-medium"></span>Diversify Investment Portfolio</h4>
+                        <p>Reduce exposure to high-volatility assets by diversifying 15% of the current portfolio into more stable investment vehicles.</p>
+                    </div>
+                </li>
+                <li class="recommendation-item">
+                    <div class="recommendation-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h4><span class="status-indicator status-low"></span>Enhance Employee Training</h4>
+                        <p>Implement quarterly security awareness training to reduce human error-related incidents, which account for 12% of current risk factors.</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Initialize risk indicator position based on score
+        function updateRiskIndicator(score) {
+            const indicator = document.getElementById('riskIndicator');
+            const meterWidth = document.querySelector('.risk-meter').offsetWidth;
+            const position = (score / 100) * meterWidth;
+            indicator.style.left = `${position}px`;
+            
+            // Update risk level text and color
+            const riskLevel = document.getElementById('riskLevel');
+            const riskScoreElement = document.getElementById('riskScore');
+            
+            if (score <= 25) {
+                riskLevel.textContent = 'Low Risk';
+                riskLevel.style.color = 'var(--low-risk)';
+                riskScoreElement.style.color = 'var(--low-risk)';
+            } else if (score <= 50) {
+                riskLevel.textContent = 'Medium Risk';
+                riskLevel.style.color = 'var(--medium-risk)';
+                riskScoreElement.style.color = 'var(--medium-risk)';
+            } else if (score <= 75) {
+                riskLevel.textContent = 'High Risk';
+                riskLevel.style.color = 'var(--high-risk)';
+                riskScoreElement.style.color = 'var(--high-risk)';
+            } else {
+                riskLevel.textContent = 'Critical Risk';
+                riskLevel.style.color = 'var(--critical-risk)';
+                riskScoreElement.style.color = 'var(--critical-risk)';
+            }
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 500);
+            }, 3000);
+        }
+        
+        // Initialize charts
+        function initializeCharts() {
+            // Risk Trend Chart
+            const trendCtx = document.getElementById('riskTrendChart').getContext('2d');
+            const trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Risk Score',
+                        data: [45, 52, 48, 55, 60, 58, 65, 68, 72, 70, 68, 65],
+                        borderColor: '#00f2fe',
+                        backgroundColor: 'rgba(0, 242, 254, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#00f2fe',
+                        pointBorderColor: '#0d0d2b',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(13, 13, 43, 0.9)',
+                            titleColor: '#00f2fe',
+                            bodyColor: '#ffffff',
+                            borderColor: '#00f2fe',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                color: '#b0b0b0'
+                            },
+                            grid: {
+                                drawBorder: false,
+                                color: 'rgba(79, 172, 254, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#b0b0b0'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Risk Distribution Chart
+            const distributionCtx = document.getElementById('riskDistributionChart').getContext('2d');
+            const distributionChart = new Chart(distributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Security', 'Compliance', 'Financial', 'Operational', 'Third-Party', 'Market', 'Regulatory', 'Human'],
+                    datasets: [{
+                        data: [24, 18, 15, 12, 10, 8, 7, 6],
+                        backgroundColor: [
+                            '#e74c3c', '#f39c12', '#f1c40f', '#2ecc71', 
+                            '#3498db', '#9b59b6', '#1abc9c', '#34495e'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15,
+                                color: '#b0b0b0'
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+        
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            updateRiskIndicator(68);
+            initializeCharts();
+
+            // Add interactivity to recalculate button
+            document.getElementById('recalculateBtn').addEventListener('click', async function() {
+                try {
+                    const response = await fetch('/api/risk/assess', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            asset_id: 'default-asset-' + Date.now() // Generate a default asset ID
+                        })
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        const newScore = result.score;
+
+                        document.getElementById('riskScore').textContent = newScore;
+                        updateRiskIndicator(newScore);
+
+                        showNotification('Risk score recalculated successfully!', 'success');
+                    } else {
+                        const error = await response.json();
+                        showNotification('Error: ' + error.error, 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error recalculating risk score: ' + error.message, 'error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

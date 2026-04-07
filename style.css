@@ -1,0 +1,631 @@
+/* ===== Section Headings (Theme Color) ===== */
+
+.threatmap-heading,
+.contact-heading {
+  font-size: 2em;
+  font-weight: 600;
+  color: var(--section-heading-color, #000);
+  transition: color 0.3s;
+}
+
+body.light-mode .threatmap-heading,
+body.light-mode .contact-heading {
+  --section-heading-color: #000;
+}
+
+body.dark-mode .threatmap-heading,
+body.dark-mode .contact-heading {
+  --section-heading-color: #fff;
+}
+
+/* ===== Console Heading (Theme Color, Full Left) ===== */
+.console-heading {
+  font-size: 2em;
+  font-weight: 600;
+  color: var(--section-heading-color, #000);
+  transition: color 0.3s;
+  margin-left: 0;
+}
+
+body.light-mode .console-heading {
+  --section-heading-color: #000;
+}
+
+body.dark-mode .console-heading {
+  --section-heading-color: #fff;
+}
+
+/* ===== GLOBAL RESET ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #0a0f1f;
+  color: #f0f0f0;
+  scroll-behavior: smooth;
+  line-height: 1.6;
+}
+
+a {
+  color: #00ffe0;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+a:hover {
+  color: #00ffcc;
+}
+
+button {
+  background: linear-gradient(90deg, #00ffe0, #007bff);
+  border: none;
+  padding: 10px 20px;
+  color: #000;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00ffe0;
+  transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #007bff, #00ffe0);
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  background-color: #10182f;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #02f6d9;
+  text-shadow: 0 0 10px #00ffe0;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links:hover {
+  text-shadow: 0 0 40px #f32365;
+}
+
+
+.nav-links li {
+  font-size: 1.1em;
+}
+
+.actions button {
+  margin-left: 10px;
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+  text-align: center;
+  padding: 100px 20px;
+  background: radial-gradient(ellipse at center, #131c31 0%, #0a0f1f 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.hero h1 {
+  font-size: 3em;
+  color: #00ffe0;
+  text-shadow: 0 0 20px #00ffe0;
+  margin-bottom: 15px;
+}
+
+.hero p {
+  font-size: 1.2em;
+  color: #bbb;
+  max-width: 700px;
+  margin: 0 auto 30px auto;
+}
+
+.hero-glow {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.3), transparent 40%);
+
+  animation: pulse 4s infinite;
+  z-index: 1;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: translateX(-50%) scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* ===== FEATURES GRID ===== */
+.features-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+  padding-top: 150px;
+}
+
+.feature-card {
+  flex: 1 1 260px;
+  max-width: 320px;
+  min-width: 220px;
+  margin: 16px 0;
+  background-color: #131c31;
+  border: 1px solid #00ffe055;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  transition: transform 0.3s;
+  animation: floatIn 1s ease-in;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 20px #00ffe0aa;
+}
+
+.feature-card i {
+  font-size: 2em;
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* ===== SERVICE CARDS ===== */
+.service-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  padding: 50px 20px;
+  padding-top: 150px;
+}
+
+.service-card {
+  width: 250px;
+  background: #1d253f;
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid #00ffe055;
+  transition: all 0.3s ease;
+}
+
+.service-card:hover {
+  box-shadow: 0 0 15px #00ffe0aa;
+  transform: scale(1.05);
+}
+
+
+
+/* ===== EXPLORER SECTION ===== */
+.explorer {
+  padding: 60px 20px;
+  background-color: #0e1329;
+  text-align: center;
+  padding-top: 150px;
+}
+
+.explorer input {
+  padding: 10px;
+  width: 60%;
+  max-width: 400px;
+  border-radius: 8px;
+  border: none;
+  margin-right: 10px;
+  gap: 20px;
+}
+
+.explorer pre {
+  text-align: left;
+  margin-top: 20px;
+  background: #181f3a;
+  padding: 20px;
+  border-radius: 10px;
+  white-space: pre-wrap;
+}
+
+/* ===== THREAT MAP & CHART ===== */
+#map,
+#analyticsChart {
+  height: 250px;
+  background: #1a1a2e;
+  margin: 20px auto;
+  max-width: 700px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px #00ffe033;
+  padding: 10px;
+}
+
+#threatmap {
+  padding-top: 120px;
+  padding-left: 50px;
+}
+
+
+/* ===== CONTACT FORM ===== */
+.contact form {
+  max-width: 500px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 40px 0;
+}
+
+#contact {
+  padding-left: 80px;
+  padding-top: 50px;
+}
+
+.contact input,
+.contact textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #131c31;
+  color: #fff;
+}
+
+#formStatus {
+  margin-top: 10px;
+  color: #00ffe0;
+}
+
+/* ===== FOOTER ===== */
+footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #10182f;
+  color: #888;
+  font-size: 0.9em;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes floatIn {
+  0% {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Default: Dark Theme (Initial) */
+:root {
+  --bg-color: #0f172a;
+  --text-color: #e2e8f0;
+  --card-color: #1e293b;
+  --accent-color: #38bdf8;
+}
+
+/* Light Theme Variables */
+.light-theme {
+  --bg-color: #f1f5f9;
+  --text-color: #0f172a;
+  --card-color: #ffffff;
+  --accent-color: #2563eb;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.card,
+.feature-card,
+.service-card {
+  background: var(--card-color);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+a,
+h1,
+h2,
+h3,
+p,
+button {
+  color: var(--text-color);
+}
+
+button {
+  background-color: var(--accent-color);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  filter: brightness(1.1);
+}
+
+.actions button {
+  margin-right: 10px;
+}
+
+body.light-mode {
+  background-color: #f5f5f5;
+  color: #111;
+}
+
+body.dark-mode {
+  background-color: #0c0c1e;
+  color: #f1f1f1;
+}
+
+.fax {
+  background-color: #0ff;
+  color: #000;
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 0 10px #0ff;
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+
+
+.fax:hover {
+  background-color: #00bfff;
+  color: #fff;
+  box-shadow: 0 0 15px #00bfff;
+  transform: scale(1.1);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  /* adjust spacing */
+}
+
+/* ===== THREAT SCAN RESULTS BOX ===== */
+#threatScanResults {
+  margin-top: 20px;
+  padding: 15px;
+  background: #131c31;
+  border: 1px solid #00ffe055;
+  border-radius: 10px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  color: #00ffe0;
+  font-family: monospace;
+  white-space: pre-wrap;
+  box-shadow: 0 0 10px #00ffe055;
+}
+
+/* ===== NFT TOKEN INPUT ===== */
+#nftTokenId {
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+  width: 80%;
+  background: #0a0f1f;
+  color: #00ffe0;
+  font-size: 1em;
+}
+
+#nftVerificationResult {
+  margin-top: 15px;
+  color: #00ffcc;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* ===== IOT DEVICE REGISTRATION INPUTS ===== */
+#deviceName,
+#deviceType {
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+  width: 80%;
+  background: #0a0f1f;
+  color: #00ffe0;
+  font-size: 1em;
+}
+
+#deviceResult {
+  margin-top: 10px;
+  color: #00ffcc;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+/* ===== Input Fields Neon Glow Style ===== */
+.input-glow {
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid #00ffe0aa;
+  width: 90%;
+  background: #0c1226;
+  color: #00ffe0;
+  font-size: 1em;
+  transition: 0.3s;
+  outline: none;
+  box-shadow: 0 0 8px #00ffe0aa;
+}
+
+.input-glow:focus {
+  box-shadow: 0 0 12px #00ffe0;
+  background: #10182f;
+}
+
+/* ===== Glow Output Box (Results) ===== */
+.glow-box {
+  margin-top: 15px;
+  padding: 15px;
+  background: #131c31;
+  border: 1px solid #00ffe055;
+  border-radius: 12px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  color: #00ffe0;
+  font-family: 'Courier New', monospace;
+  white-space: pre-wrap;
+  box-shadow: 0 0 12px #00ffe055;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.5s ease-out;
+}
+
+/* Fade-in animation when content is shown */
+.glow-box.fade-in.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== Animated Scan Dots (optional visual) ===== */
+@keyframes dots {
+  0% {
+    content: ".";
+  }
+
+  33% {
+    content: "..";
+  }
+
+  66% {
+    content: "...";
+  }
+
+  100% {
+    content: ".";
+  }
+}
+
+/* Reusable Animation Classes */
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px #00ffe033;
+  }
+
+  50% {
+    box-shadow: 0 0 20px #00ffe0aa;
+  }
+}
+
+/* ===== Console Heading (Left Near Margin) ===== */
+.console-heading {
+  font-size: 2em;
+  font-weight: 600;
+  color: var(--section-heading-color, #000);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-left: 0;
+  margin-top: 24px;
+  transition: color 0.ms;
+}
+
+body.light-mode .console-heading {
+  --section-heading-color: #000;
+}
+
+body.dark-mode .console-heading {
+  --section-heading-color: #fff;
+}
+
+/* ===== Features Row ===== */
+.features-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 100px;
+  margin-bottom: 60px;
+}
+
+.features-row .feature-card {
+  flex: 1 1 220px;
+  max-width: 320px;
+  min-width: 180px;
+  margin: 0 12px;
+}
+
+/* IoT Register Page */
+.page-iot {
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  border: 2px solid #0ff;
+  box-shadow: 0px 0px 20px rgba(0, 255, 255, 0.3);
+}
+
+/* NFT Verify Page */
+.page-nft {
+  background: linear-gradient(135deg, #2c003e, #5a189a, #7b2cbf);
+  border: 2px solid #ff00ff;
+  box-shadow: 0px 0px 20px rgba(255, 0, 255, 0.4);
+}
+
+/* Analytics Page */
+.page-analytics {
+  background: linear-gradient(135deg, #001219, #005f73, #0a9396);
+  border: 2px solid #00eaff;
+  box-shadow: 0px 0px 20px rgba(0, 234, 255, 0.3);
+}
+
+/* Wallet Connect Page */
+.page-wallet {
+  background: linear-gradient(135deg, #141e30, #243b55);
+  border: 2px solid #ffd700;
+  box-shadow: 0px 0px 20px rgba(255, 215, 0, 0.4);
+}

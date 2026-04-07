@@ -1,0 +1,44 @@
+[
+  {
+    "deviceId": "DEV-101",
+    "deviceName": "Temperature Sensor",
+    "deviceType": "Sensor",
+    "status": "online",
+    "registeredAt": "2025-10-09T11:20:00.000000"
+  },
+  {
+    "deviceId": "DEV-102",
+    "deviceName": "CCTV Camera",
+    "deviceType": "Camera",
+    "status": "offline",
+    "registeredAt": "2025-10-09T11:21:00.000000"
+  },
+  {
+    "deviceId": "DEV-103",
+    "deviceName": "Gateway Hub",
+    "deviceType": "Gateway",
+    "status": "online",
+    "registeredAt": "2025-10-09T11:22:00.000000"
+  },
+  {
+    "deviceId": "TEST-001",
+    "deviceName": "Test Device",
+    "deviceType": "Sensor",
+    "status": "online",
+    "registeredAt": "2025-10-09T11:21:45.241421"
+  },
+  {
+    "id": 4524,
+    "name": "Test Device",
+    "type": "sensor",
+    "status": "online",
+    "registered_at": "2025-11-14T22:48:22.049336"
+  },
+  {
+    "id": 7767,
+    "name": "Test Device",
+    "type": "iot",
+    "status": "online",
+    "registered_at": "2026-01-30T14:25:42.508533"
+  }
+]

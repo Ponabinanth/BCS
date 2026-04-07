@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SecureChain | Threat Intelligence Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/globe.gl@2.29.0/dist/globe.gl.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Shared Dashboard Styles */
+        .scan-card {
+            background: linear-gradient(180deg, #001a1a 60%, #003d3d 100%);
+            border-radius: 14px;
+            box-shadow: 0 6px 24px rgba(0, 255, 255, 0.07);
+            padding: 22px;
+            color: #c8ffff;
+            font-family: Inter, monospace;
+            border: 1px solid rgba(0, 255, 255, 0.13);
+        }
+
+        .scan-card h3 {
+            margin-top: 0;
+            color: #9ff;
+        }
+
+        .scan-result {
+            font-family: monospace;
+            font-size: 14px;
+            color: #cfe;
+            white-space: pre-wrap;
+            background: rgba(0, 0, 0, 0.06);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px dashed rgba(0, 255, 255, 0.03);
+            min-height: 40px;
+            margin-top: 8px;
+        }
+
+        .sev-good {
+            background: rgba(0, 200, 120, 0.12);
+            color: #8ff;
+            border: 1px solid rgba(0, 200, 120, 0.15);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+
+        .sev-bad {
+            background: rgba(255, 140, 0, 0.08);
+            color: #ffd88f;
+            border: 1px solid rgba(255, 140, 0, 0.12);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+
+        .sev-high {
+            background: rgba(255, 40, 40, 0.08);
+            color: #ffd8d8;
+            border: 1px solid rgba(255, 40, 40, 0.12);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+
+        /* Dashboard-Specific Styles */
+        .dashboard-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            background: #181a2b;
+            border-radius: 10px;
+            padding: 5px;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+        }
+
+        .dashboard-tabs button {
+            background: transparent;
+            border: none;
+            color: #00e6e6;
+            padding: 10px 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .dashboard-tabs button:hover {
+            background: rgba(0, 230, 230, 0.05);
+        }
+
+        .dashboard-tabs button.active {
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            color: #0d0d2b;
+            box-shadow: 0 0 15px rgba(79, 172, 254, 0.5);
+        }
+
+        .tab-content {
+            padding: 20px 0;
+            border-radius: 15px;
+        }
+        
+        /* Basic Body/Header for standalone page */
+        body {
+            background-color: #0d0d2b;
+            color: white;
+            font-family: sans-serif;
+        }
+        .navbar {
+            padding: 15px 50px;
+            background: #181a2b;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+        .navbar a {
+            color: #00e6e6;
+            text-decoration: none;
+        }
+        .section {
+            padding: 40px 50px;
+        }
+        .threatmap-heading {
+            text-align: center;
+            color: #00f2fe;
+            margin-bottom: 30px;
+        }
+        
+        /* New styles for centering the log box and fixing map size */
+        #tab-live-map {
+            display: flex;
+            flex-direction: column; /* Stack log box above map */
+            align-items: center; /* Center items horizontally */
+        }
+        
+        .radar-log-wrapper {
+            width: 100%; /* Take full width of parent container */
+            display: flex;
+            justify-content: center; /* Center the log card */
+            margin-bottom: 20px;
+        }
+
+        /* Fixed size for the log card */
+        .log-card-fixed-width {
+            width: 100%; /* Default 100% on small screens */
+            max-width: 550px; /* Max size for the card */
+            min-height: 400px;
+            flex: 0 0 auto; /* Do not grow or shrink */
+        }
+
+        /* Fixed size for the Globe Map */
+        #globe-container {
+            width: 800px; /* Fixed width for the map */
+            height: 500px; /* Fixed height for the map */
+            background-color: #0b0c20; 
+            border-radius: 15px; 
+            box-shadow: 0 0 40px rgba(0, 242, 254, 0.2);
+            flex: 0 0 auto; /* Do not grow or shrink */
+            margin: 0 auto; /* Center the map container */
+        }
+
+        /* Adjustments for responsiveness */
+        @media (max-width: 900px) {
+            #globe-container {
+                width: 100%;
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="navbar" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="logo" style="font-size: 1.5em; font-weight: bold;">🔐 SecureChain Dashboard</div>
+        <nav>
+            <a href="index.html" style="margin-right: 20px;">← Back to Main Site</a>
+            <a href="#dashboard">Dashboard Home</a>
+        </nav>
+    </header>
+
+    <section id="dashboard" class="section">
+        <h1 class="threatmap-heading">💥 Global Threat & Spam Intelligence Dashboard</h1>
+
+        <div class="dashboard-tabs">
+            <button class="tab-button active" onclick="switchTab('live-map')">🗺 Live Map</button>
+            <button class="tab-button" onclick="switchTab('spam-intel')">📞 Spam Intelligence</button>
+        </div>
+
+        <div id="tab-live-map" class="tab-content">
+            <div class="radar-log-wrapper">
+                <div class="scan-card log-card-fixed-width"
+                    style="display: flex; flex-direction: column;">
+                    <h3>Cyber Radar Log & IoT Controls</h3>
+                    <p class="scan-status" style="margin-top: 10px;">Status: <span id="radarStatus"
+                            class="sev-good">ACTIVE</span></p>
+                    <pre id="radarLog" class="scan-result" style="height: 150px; overflow-y: scroll;"></pre>
+                    <div style="margin-top: 15px;">
+                        <button id="scanBtn"
+                            style="width: 100%; padding:10px; background:#4cafef; color:white; border:none; border-radius:6px; margin-bottom: 5px;">🔍
+                            Initiate Deep Scan</button>
+                        <button id="addDeviceBtn"
+                            style="width: 49%; padding:8px; background:#00e6e6; color:#001; border:none; border-radius:6px;">➕
+                            Add IoT</button>
+                        <button id="clearDevicesBtn"
+                            style="width: 49%; padding:8px; background:#f44336; color:white; border:none; border-radius:6px; float: right;">🧹
+                            Clear IoT</button>
+                        <div id="deviceTableWrap"
+                            style="margin-top: 15px; background:rgba(0,0,0,0.1); padding: 8px; border-radius: 8px;">
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="globe-container">
+            </div>
+        </div>
+
+        <div id="tab-spam-intel" class="tab-content" style="display:none;">
+            <div
+                style="display: flex; flex-wrap: wrap; justify-content: space-around; gap: 40px; align-items: center;">
+
+                <div class="scan-card" style="flex: 1 1 400px; max-width: 450px;">
+                    <h3>📞 Phone Number & Metadata Scanner</h3>
+                    <p style="font-size:0.9em; color:#ccc; margin-bottom:15px;">Enter a number to trace its origin and
+                        check against the Global Spam Ledger.</p>
+                    <input type="text" id="spamPhoneInput" placeholder="Enter Phone Number (+1...)"
+                        style="width: 100%; margin: 8px 0; padding: 10px; border-radius: 6px; border: 1px solid #4facfe; background: #181a2b; color: white; font-size: 1em;" />
+                    <button onclick="scanSpamNumber()" id="spamScanBtn" class="btn"
+                        style="width: 100%; margin-top: 10px;">Scan Global Ledger</button>
+                    <p id="spamScanResult" class="scan-result" style="margin-top: 15px; color: #00e6e6;">Awaiting scan
+                        target.</p>
+                    <button onclick="markNumberSafe()" id="markSafeBtn" class="btn"
+                        style="width: 48%; margin-top: 10px; background: #00a884; display:none;">Mark Safe</button>
+                    <button onclick="reportNumberSpam()" id="reportSpamBtn" class="btn"
+                        style="width: 48%; margin-top: 10px; background: #ff4d4d; float: right; display:none;">Report
+                        Spam</button>
+                </div>
+
+                <div
+                    style="flex: 1 1 350px; max-width: 350px; background: #181a2b; border-radius: 15px; padding: 20px; box-shadow: 0 0 15px rgba(79, 172, 254, 0.3);">
+                    <h3 style="text-align: center; margin-bottom: 15px; color: #4facfe;">Spam Risk Distribution</h3>
+                    <canvas id="spamDoughnutChart"></canvas>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+    <section id="analytics" class="section" style="padding-top: 10px;">
+        <h2 class="threatmap-heading">📊 Analytics</h2>
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-around; gap: 40px;">
+            <div
+                style="flex: 1 1 45%; min-width: 400px; background: #181a2b; border-radius: 15px; padding: 20px; box-shadow: 0 0 15px rgba(0, 230, 230, 0.3);">
+                <h3 style="text-align: center; margin-bottom: 15px; color: #00e6e6;">Threat Incidents Last 7 Days
+                </h3>
+                <canvas id="threatHistoryChart"></canvas>
+            </div>
+
+            <div
+                style="flex: 1 1 45%; min-width: 400px; background: #181a2b; border-radius: 15px; padding: 20px; box-shadow: 0 0 15px rgba(0, 230, 230, 0.3);">
+                <h3 style="text-align: center; margin-bottom: 15px; color: #00e6e6;">Top 5 Threat Types</h3>
+                <canvas id="topThreatsChart"></canvas>
+            </div>
+        </div>
+    </section>
+    <div id="custom-alert-container" class="fixed top-4 right-4 z-[1001] pointer-events-none"></div>
+
+    <script>
+        // --- DATA STORE (SIMULATED LEDGER) ---
+        let currentThreats = 50;
+        let spamData = { safe: 450, lowRisk: 120, highRisk: 30 };
+        const ATTACK_TYPES = ["DDoS", "Ransomware", "Zero-Day Probe", "Phishing C2", "MITM Attack", "SQL Injection"];
+        const RADAR_LOG = document.getElementById('radarLog');
+
+        // --- CUSTOM ALERT BOX IMPLEMENTATION (MINIMAL VERSION) ---
+        const alertBox = {
+            init: function () {
+                this.container = document.getElementById('custom-alert-container');
+            },
+            show: function (message, type = 'info') {
+                if (!this.container) this.init();
+
+                let bgColor = 'bg-[#4facfe]'; 
+
+                // Create the alert element
+                const alertEl = document.createElement('div');
+                alertEl.className = `p-4 mt-2 rounded-lg shadow-xl text-white font-semibold transition-all duration-500 opacity-0 transform translate-x-10 ${bgColor} max-w-sm`;
+                alertEl.innerHTML = `<span>${message}</span>`; // Simplified for new page
+
+                this.container.appendChild(alertEl);
+
+                // Animate in
+                setTimeout(() => {
+                    alertEl.classList.remove('opacity-0', 'translate-x-10');
+                    alertEl.classList.add('opacity-100', 'translate-x-0');
+                }, 10); 
+
+                // Animate out and remove after 4 seconds
+                setTimeout(() => {
+                    alertEl.classList.remove('opacity-100', 'translate-x-0');
+                    alertEl.classList.add('opacity-0', 'translate-x-10');
+                    setTimeout(() => alertEl.remove(), 500);
+                }, 4000);
+            }
+        };
+
+        // --- DASHBOARD: TAB LOGIC ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.querySelectorAll('.dashboard-tabs button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            const activeTab = document.getElementById(`tab-${tabId}`);
+            activeTab.style.display = 'flex'; // Use flex to help with centering and layout
+
+            document.querySelector(`.dashboard-tabs button[onclick="switchTab('${tabId}')"]`).classList.add('active');
+
+            if (tabId === 'spam-intel' && !window.spamDoughnutChart) {
+                initSpamDoughnutChart();
+            }
+        }
+
+
+        // --- DASHBOARD: GLOBE.GL AND RADAR LOGIC (UPDATED) ---
+        let globe;
+
+        const attackCoordinates = [
+            { lat: 40.7128, lng: -74.0060, city: 'New York' },
+            { lat: 51.5074, lng: 0.1278, city: 'London' },
+            { lat: 35.6895, lng: 139.6917, city: 'Tokyo' },
+            { lat: 37.7749, lng: -122.4194, city: 'San Francisco' },
+            { lat: 25.276987, lng: 55.296249, city: 'Dubai' },
+            { lat: 1.3521, lng: 103.8198, city: 'Singapore' },
+            { lat: 34.0522, lng: -118.2437, city: 'Los Angeles' },
+            { lat: 52.5200, lng: 13.4050, city: 'Berlin' },
+            { lat: 19.0760, lng: 72.8777, city: 'Mumbai' }
+        ];
+
+        function addRadarLogEntry(text, severity = 'info') {
+            const p = document.createElement('p');
+            p.style.margin = '2px 0';
+            p.style.fontSize = '0.9em';
+            p.style.color = severity === 'high' ? '#ff4d4d' : severity === 'medium' ? '#ffae42' : '#00e6e6';
+            p.innerHTML = `[${new Date().toLocaleTimeString()}] ${text}`;
+            RADAR_LOG.prepend(p);
+            // Keep log short
+            while (RADAR_LOG.children.length > 8) {
+                RADAR_LOG.removeChild(RADAR_LOG.lastChild);
+            }
+            if (severity === 'high' || severity === 'medium') {
+                currentThreats++;
+                updateAnalyticsCharts();
+            }
+        }
+
+        function initGlobe() {
+            const container = document.getElementById('globe-container');
+            if (!container) return;
+            
+            // --- FIX FOR GLOBE RENDERING ---
+            // The globe needs the width and height set directly on the container BEFORE calling Globe()
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+
+            globe = Globe()
+                (container)
+                .width(width) // Pass fixed width to globe.gl
+                .height(height) // Pass fixed height to globe.gl
+                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg') 
+                .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png') 
+                .backgroundColor('#0d0d2b')
+                .showAtmosphere(true)
+                .atmosphereColor('#00f2fe') 
+                .atmosphereAltitude(0.3);
+
+            globe.pointOfView({ lat: 20, lng: -50, altitude: 2.0 }, 1000); 
+
+            // Handle window resize to re-render the globe canvas size correctly, maintaining the fixed container size
+            window.addEventListener('resize', () => {
+                globe.width(container.offsetWidth).height(container.offsetHeight);
+            });
+            
+            simulateCyberActivity();
+
+            addRadarLogEntry("Global Cyber Radar Initialized.", 'success');
+        }
+
+        function simulateCyberActivity() {
+            const N = 10;
+            let arcs = [];
+
+            const updateArcs = () => {
+                if (arcs.length >= N) {
+                    arcs.shift();
+                }
+
+                const start = attackCoordinates[Math.floor(Math.random() * attackCoordinates.length)];
+                let end;
+                do {
+                    end = attackCoordinates[Math.floor(Math.random() * attackCoordinates.length)];
+                } while (end === start);
+
+                const attackType = ATTACK_TYPES[Math.floor(Math.random() * ATTACK_TYPES.length)];
+                const intensity = Math.random();
+
+                arcs.push({
+                    startLat: start.lat,
+                    startLng: start.lng,
+                    endLat: end.lat,
+                    endLng: end.lng,
+                    color: intensity < 0.3 ? '#00e6e6' : intensity < 0.7 ? '#ffae42' : '#ff4d4d',
+                    label: `${attackType} from ${start.city} to ${end.city}`,
+                    intensity: intensity,
+                    type: attackType
+                });
+
+                const logSeverity = intensity < 0.3 ? 'info' : intensity < 0.7 ? 'medium' : 'high';
+                addRadarLogEntry(`💥 ${arcs[arcs.length - 1].label} (Intensity: ${arcs[arcs.length - 1].intensity.toFixed(2)})`, logSeverity);
+
+                globe.arcsData(arcs)
+                    .arcColor('color')
+                    .arcDashLength(0.5)
+                    .arcDashGap(intensity < 0.7 ? 1.5 : 0.8)
+                    .arcStroke(intensity * 3 + 0.5)
+                    .arcDashAnimateTime(2000);
+
+                setTimeout(updateArcs, 3000);
+            };
+
+            updateArcs();
+        }
+
+        function scanForThreats() {
+            addRadarLogEntry("🔎 Initiating deep network scan...", 'medium');
+            currentThreats = Math.max(0, currentThreats - 5); 
+            updateAnalyticsCharts();
+
+            setTimeout(() => {
+                const detectedAttack = ATTACK_TYPES[Math.floor(Math.random() * ATTACK_TYPES.length)];
+                addRadarLogEntry(`⚠️ Threat Detected: ${detectedAttack} Anomaly`, 'high');
+
+                setTimeout(() => {
+                    addRadarLogEntry(`✅ Threat Neutralized: ${detectedAttack} Vector Closed`, 'success');
+                }, 4000);
+            }, 1500);
+        }
+
+        // --- DASHBOARD: SPAM INTELLIGENCE LOGIC ---
+
+        function scanSpamNumber() {
+            const phone = document.getElementById('spamPhoneInput').value.trim();
+            const resultEl = document.getElementById('spamScanResult');
+            const btn = document.getElementById('spamScanBtn');
+            const markSafeBtn = document.getElementById('markSafeBtn');
+            const reportSpamBtn = document.getElementById('reportSpamBtn');
+
+            markSafeBtn.style.display = 'none';
+            reportSpamBtn.style.display = 'none';
+
+            if (btn.disabled) return;
+            if (!phone || !phone.match(/^\+\d{10,15}$/)) {
+                resultEl.textContent = 'Invalid phone number format.';
+                resultEl.style.color = '#ff4d4d';
+                alertBox.show("Please enter a valid E.164 formatted number.", 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Scanning Global Spam Ledger...';
+            resultEl.textContent = 'Awaiting blockchain verification...';
+            resultEl.style.color = '#4cafef';
+
+            setTimeout(() => {
+                const r = Math.random();
+                let riskLevel, color, reportCount, message;
+
+                if (r < 0.15) {
+                    riskLevel = 'HIGH RISK';
+                    color = '#ff4d4d';
+                    reportCount = Math.floor(Math.random() * 500) + 100;
+                    message = `🚨 HIGH RISK: Reported by ${reportCount} global users.`;
+                    spamData.highRisk++;
+                    reportSpamBtn.style.display = 'block';
+                } else if (r < 0.35) {
+                    riskLevel = 'LOW RISK';
+                    color = '#ffae42';
+                    reportCount = Math.floor(Math.random() * 90) + 10;
+                    message = `⚠️ LOW RISK: Minimal user reports (${reportCount}).`;
+                    spamData.lowRisk++;
+                    reportSpamBtn.style.display = 'block';
+                } else {
+                    riskLevel = 'SAFE';
+                    color = '#00e6e6';
+                    reportCount = Math.floor(Math.random() * 5);
+                    message = `✅ SAFE: Zero threat profile. Verified Telecom Ledger.`;
+                    spamData.safe++;
+                    markSafeBtn.style.display = 'block';
+                }
+
+                resultEl.innerHTML = `<strong>Status: ${riskLevel}</strong><br>Location: Global/Unknown<br>Spam Reports: ${reportCount}<br>Action: ${message}`;
+                resultEl.style.color = color;
+
+                btn.disabled = false;
+                btn.textContent = 'Scan Global Ledger';
+                alertBox.show(`Scan complete. Number is ${riskLevel}.`, r < 0.15 ? 'error' : r < 0.35 ? 'warning' : 'success');
+                updateSpamDoughnutChart();
+            }, 2500);
+        }
+
+        function markNumberSafe() {
+            spamData.lowRisk = Math.max(0, spamData.lowRisk - 1);
+            spamData.safe = Math.min(500, spamData.safe + 1);
+            updateSpamDoughnutChart();
+            document.getElementById('spamScanResult').textContent = '✅ Number marked SAFE on the Global Spam Ledger.';
+            document.getElementById('markSafeBtn').style.display = 'none';
+            document.getElementById('reportSpamBtn').style.display = 'none';
+            alertBox.show("Number marked as safe. Dashboard updated.", 'success');
+        }
+
+        function reportNumberSpam() {
+            spamData.lowRisk = Math.max(0, spamData.lowRisk - 1);
+            spamData.highRisk = Math.min(200, spamData.highRisk + 1);
+            updateSpamDoughnutChart();
+            document.getElementById('spamScanResult').textContent = '🚨 Number reported and flagged as HIGH RISK on the Global Spam Ledger.';
+            document.getElementById('markSafeBtn').style.display = 'none';
+            document.getElementById('reportSpamBtn').style.display = 'none';
+            alertBox.show("Number reported as high risk. Dashboard updated.", 'error');
+        }
+
+        // --- DASHBOARD: CHART LOGIC ---
+        let spamDoughnutChart, threatHistoryChart, topThreatsChart;
+
+        function initSpamDoughnutChart() {
+            const ctx = document.getElementById('spamDoughnutChart').getContext('2d');
+            spamDoughnutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Safe', 'Low Risk Spam', 'High Risk Spam'],
+                    datasets: [{
+                        data: [spamData.safe, spamData.lowRisk, spamData.highRisk],
+                        backgroundColor: ['#00e6e6', '#ffae42', '#ff4d4d'],
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { labels: { color: 'white' } },
+                        title: { display: false }
+                    }
+                }
+            });
+            window.spamDoughnutChart = spamDoughnutChart;
+        }
+
+        function updateSpamDoughnutChart() {
+            if (spamDoughnutChart) {
+                spamDoughnutChart.data.datasets[0].data = [spamData.safe, spamData.lowRisk, spamData.highRisk];
+                spamDoughnutChart.update();
+            }
+        }
+
+        function initAnalyticsCharts() {
+            // Simulated data for 7 days
+            const historyData = [40, 45, 60, 55, 70, 65, currentThreats];
+            const labels = ['Day -6', 'Day -5', 'Day -4', 'Day -3', 'Day -2', 'Yesterday', 'Today'];
+
+            // Line Chart
+            const lineCtx = document.getElementById('threatHistoryChart').getContext('2d');
+            threatHistoryChart = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Incidents',
+                        data: historyData,
+                        borderColor: '#00e6e6',
+                        backgroundColor: 'rgba(0, 230, 230, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: 'white' } } },
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(0, 230, 230, 0.1)' } },
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(0, 230, 230, 0.1)' } }
+                    }
+                }
+            });
+            window.threatHistoryChart = threatHistoryChart;
+
+            // Bar Chart (Top Threats)
+            const topThreats = { 'DDoS': 25, 'Phishing C2': 15, 'Ransomware': 12, 'MITM Attack': 8, 'Zero-Day Probe': 5 };
+            const barCtx = document.getElementById('topThreatsChart').getContext('2d');
+            topThreatsChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(topThreats),
+                    datasets: [{
+                        label: 'Count',
+                        data: Object.values(topThreats),
+                        backgroundColor: ['#4facfe', '#00e6e6', '#ffae42', '#ff4d4d', '#4c4ffe'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { color: 'white' }, grid: { color: 'rgba(0, 230, 230, 0.1)' } }
+                    }
+                }
+            });
+            window.topThreatsChart = topThreatsChart;
+        }
+
+        function updateAnalyticsCharts() {
+            if (threatHistoryChart) {
+                // Update the "Today" data point
+                threatHistoryChart.data.datasets[0].data[threatHistoryChart.data.datasets[0].data.length - 1] = currentThreats;
+                threatHistoryChart.update();
+            }
+        }
+
+
+        // --- IoT DEVICE LOGIC (COPIED FOR DASHBOARD UTILITY) ---
+        const STORAGE_KEY = 'demo_devices';
+        const addDeviceBtn = document.getElementById('addDeviceBtn');
+        const clearDevicesBtn = document.getElementById('clearDevicesBtn');
+        const scanBtn = document.getElementById('scanBtn');
+
+        function getRandomDevice() {
+            const types = ["Sensor", "Camera", "Gateway", "Lock", "Monitor", "Light", "Drone"];
+            const type = types[Math.floor(Math.random() * types.length)];
+            return {
+                deviceType: type,
+                registeredAt: Date.now(),
+                id: 'DEV-' + Math.floor(Math.random() * 1000000)
+            };
+        }
+
+        function loadDevices() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        }
+        function saveDevices(arr) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+        }
+
+        function renderDevices() {
+            let arr = loadDevices();
+            let html = '';
+            if (arr.length === 0) {
+                html = '<div style="text-align:center; color:#888;">No IoT devices registered.</div>';
+            } else {
+                html = `<table style="width:100%; background:#0d0d2b; color:#0ff; border-radius:12px; font-size:0.9em; margin-top:12px; text-align: left;"><thead><tr><th>ID</th><th>Type</th><th>Registered</th></tr></thead><tbody>`;
+                html += arr.map(d => `<tr><td>${d.id}</td><td>${d.deviceType}</td><td>${new Date(d.registeredAt).toLocaleDateString()}</td></tr>`).join('');
+                html += '</tbody></table>';
+            }
+            document.getElementById('deviceTableWrap').innerHTML = html;
+        }
+
+        // Attach event listeners for IoT controls
+        if(addDeviceBtn) addDeviceBtn.addEventListener('click', () => {
+            let arr = loadDevices();
+            arr.push(getRandomDevice());
+            saveDevices(arr);
+            renderDevices();
+            addRadarLogEntry(`New IoT device registered: ${arr[arr.length - 1].id}`, 'info');
+        });
+
+        if(clearDevicesBtn) clearDevicesBtn.addEventListener('click', () => {
+            localStorage.removeItem(STORAGE_KEY);
+            renderDevices();
+            addRadarLogEntry(`All IoT devices cleared from registry.`, 'medium');
+        });
+
+        if(scanBtn) scanBtn.addEventListener("click", scanForThreats);
+
+
+        // Initial setup on load
+        document.addEventListener('DOMContentLoaded', () => {
+            alertBox.init();
+            renderDevices();
+            initGlobe();
+            initAnalyticsCharts();
+            switchTab('live-map');
+        });
+    </script>
+</body>
+
+</html>

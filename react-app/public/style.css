@@ -1,0 +1,64 @@
+/* Consolidated react-app/style.css - merged from src/style.css and src/styles.css */
+
+/* Global resets and variables */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f1a;
+  --panel:#0f1724;
+  --muted:#9aa6b2;
+  --accent:#00f2fe;
+  --accent-2:#4facfe;
+  --glass: rgba(255,255,255,0.03);
+  --radius:12px;
+  --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  --section-heading-color:#00f2fe;
+}
+
+html,body{height:100%}
+body{font-family:var(--font-sans, 'Segoe UI', sans-serif);background:linear-gradient(180deg,#030417 0%, #0d0f1a 100%);color:#dbeafe;line-height:1.45}
+
+/* Navbar */
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);-webkit-backdrop-filter: blur(6px);backdrop-filter: blur(6px);position:sticky;top:0;z-index:1000;border-bottom:1px solid rgba(255,255,255,0.02)}
+.logo{font-weight:700;font-size:1.15rem;color:var(--accent)}
+.nav-links{display:flex;gap:14px;list-style:none;margin:0;padding:0}
+.nav-links a{color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all .15s}
+
+/* Hero */
+.hero{display:flex;align-items:center;justify-content:space-between;padding:64px 48px;gap:36px}
+.hero-content{max-width:720px}
+.hero h1{font-size:2.2rem;margin:0 0 12px;color:var(--accent)}
+
+/* Feature cards */
+.feature-card{flex:1 1 210px;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform .12s}
+
+/* Buttons */
+.btn{padding:8px 12px;border-radius:8px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#001;cursor:pointer}
+
+/* Chatbot */
+#chatbot{position:fixed;bottom:20px;right:20px;z-index:1200}
+#chatToggle{width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.45)}
+#chatWindow{width:360px;height:420px;background:linear-gradient(180deg,#071226,#0b1630);border-radius:14px;box-shadow:0 14px 40px rgba(10,20,40,0.6);overflow:hidden;display:flex;flex-direction:column}
+
+/* Analytics */
+#analytics-container{max-width:960px;margin:0 auto}
+#analyticsTable{width:100%;border-collapse:collapse;background:linear-gradient(180deg,#071022,#081426);color:var(--muted);border-radius:10px;overflow:hidden}
+
+/* Device table */
+#deviceTableWrap table{width:100%;border-collapse:collapse;color:#bff}
+
+/* Wallet */
+.wallet-address-card{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+
+/* Small responsive */
+@media (max-width:900px){.hero{flex-direction:column;align-items:flex-start}.features-row{flex-direction:column}.nav-links{display:none}}
+@media (max-width:480px){#chatWindow{width:320px;right:8px;bottom:80px}.navbar{padding:10px 12px}}
+
+/* extra utility classes */
+.container{max-width:1100px;margin:0 auto;padding:0 16px}
+.flex{display:flex}.center{display:flex;align-items:center;justify-content:center}.grid{display:grid;gap:12px}
+.card{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+
+/* legacy compatibility */
+.threatmap-heading,.contact-heading,.console-heading{font-size:2em;font-weight:600;color:var(--section-heading-color);transition:color .3s}
+
+/* End merged stylesheet */

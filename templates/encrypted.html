@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encrypted Storage - SecureChain</title>
+    <style>
+        /* Fused and Enhanced CSS for Encrypted Storage Feature */
+        :root {
+            --color-bg-dark: #070a13; /* Very dark blue/black */
+            --color-bg-card: #111827; /* Darker inner card */
+            --color-primary: #00f5ff; /* Aqua/Neon accent */
+            --color-secondary: #0088cc; /* Darker blue accent */
+            --color-text: #e0e0e0;
+            --color-glow: rgba(0, 245, 255, 0.6);
+        }
+
+        body {
+            background-color: var(--color-bg-dark);
+            color: var(--color-text);
+            /* --- FONT STYLE CHANGE --- */
+            font-family: 'Inter', 'Roboto', sans-serif; 
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .feature-detail {
+            max-width: 1200px;
+            width: 90%;
+            margin-top: 50px;
+            padding: 40px;
+            background-color: var(--color-bg-card);
+            border-radius: 15px;
+            box-shadow: 0 0 30px var(--color-glow);
+            border-top: 3px solid var(--color-primary);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--color-primary);
+            text-shadow: 0 0 15px var(--color-glow);
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--color-text);
+            margin-bottom: 40px;
+        }
+
+        .highlight-box {
+            margin: 50px auto;
+            max-width: 800px;
+            padding: 25px;
+            background: rgba(0, 245, 255, 0.08);
+            border-left: 5px solid var(--color-primary);
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .highlight-box h2 {
+            color: var(--color-primary);
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .highlight-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .highlight-box ul li {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* --- New: Encryption Steps Grid --- */
+        .encryption-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .step-card {
+            background-color: #0d121c;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--color-secondary);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .step-card:hover {
+            border-color: var(--color-primary);
+            transform: translateY(-5px);
+        }
+
+        .step-card h3 {
+            color: var(--color-primary);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        /* --- New: Simulated Uploader Section --- */
+        .uploader-section {
+            background-color: #1a202c;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 40px auto;
+            border: 2px dashed var(--color-primary);
+            max-width: 600px;
+        }
+        
+        .uploader-btn {
+            background-color: var(--color-primary);
+            color: var(--color-bg-dark);
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s, transform 0.3s;
+            margin-top: 15px;
+        }
+        
+        .uploader-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        #upload-status {
+            margin-top: 20px;
+            min-height: 25px;
+            color: var(--color-secondary);
+        }
+
+        /* Footer Styling */
+        footer {
+            margin: 40px 0;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .footer-action-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .footer-action-links a {
+            color: var(--color-text);
+            padding: 15px 30px; /* Slightly larger for emphasis */
+            background-color: var(--color-bg-card);
+            border: 1px solid var(--color-primary);
+            border-radius: 8px; /* Slightly more rounded */
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s, box-shadow 0.3s, transform 0.3s;
+            min-width: 250px; /* Ensure buttons are a good size */
+        }
+
+        .footer-action-links a:hover {
+            background-color: var(--color-primary);
+            color: var(--color-bg-dark);
+            box-shadow: 0 0 15px var(--color-glow); /* More pronounced glow */
+            transform: scale(1.03);
+        }
+        
+        /* Hiding original image grid as it is replaced by technical diagrams/simulator */
+        .images-grid {
+            display: none; 
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="feature-detail">
+        <h1>🔐 Decentralized Encrypted Storage</h1>
+        <p>
+            SecureChain's storage solution combines **AES-256 military-grade encryption** with the **immutability of blockchain**, guaranteeing
+            data integrity, censorship resistance, and complete user control over decryption keys. Your data, locked in the chain.
+        </p>
+
+        <div class="highlight-box">
+            <h2>⚙️ SecureChain Storage Process (Three-Step Security)</h2>
+            <div class="encryption-steps-grid">
+                <div class="step-card">
+                    <h3>1. Client-Side Encryption</h3>
+                    <p>Data is encrypted locally using the user's private key and **AES-256**. The data leaves your device already scrambled.</p>
+                </div>
+                <div class="step-card">
+                    <h3>2. Decentralized Sharding</h3>
+                    <p>The encrypted data is split into multiple shards and stored across a **decentralized network of nodes**, preventing single points of failure.</p>
+                </div>
+                <div class="step-card">
+                    <h3>3. Blockchain Key & Hash Validation</h3>
+                    <p>Only the **storage hash and the access metadata** are recorded on the ledger, validating the data's integrity and securing the decryption key pointer.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="uploader-section">
+            <h2 style="color: var(--color-primary); margin-bottom: 20px; text-align: center;">Upload Simulator</h2>
+            <p style="margin-bottom: 15px; font-size: 1rem; color: #b3ccff;">Demonstrates the process: Encrypt $\rightarrow$ Distribute $\rightarrow$ Confirm on Chain.</p>
+            
+            <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+            <button class="uploader-btn" onclick="document.getElementById('fileInput').click()">
+                ⬆️ Select File for Secure Upload
+            </button>
+            <div id="upload-status"></div>
+            <p style="margin-top: 15px; font-size: 0.9rem; color: #8899b3;">
+                Status: Ready to encrypt. No data is actually uploaded in this simulation.
+            </p>
+        </div>
+
+        <div class="highlight-box">
+            <h2>🚀 Unmatched Security & Compliance</h2>
+            <ul>
+                <li><span style="color: var(--color-primary); font-weight: bold;">✅ Immutability:</span> Once stored, data cannot be deleted or tampered with, meeting regulatory requirements.</li>
+                <li><span style="color: var(--color-primary); font-weight: bold;">✅ Proven Algorithms:</span> Uses industry-standard **AES-256** for encryption and **SHA-256** for hashing.</li>
+                <li><span style="color: var(--color-primary); font-weight: bold;">✅ Enhanced Privacy:</span> True **Zero-Knowledge** architecture—SecureChain nodes cannot read your files.</li>
+                <li><span style="color: var(--color-primary); font-weight: bold;">✅ Disaster Recovery:</span> Built-in data redundancy across the decentralized network ensures near-zero downtime and loss.</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+
+<footer>
+    <div class="footer-action-links">
+        <a href="documentation.html">📖 View Technical Documentation</a>
+        <a href="index.html">⬅ Back to SecureChain Features</a>
+    </div>
+</footer>
+
+<script>
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        const statusDiv = document.getElementById('upload-status');
+        
+        if (!file) {
+            statusDiv.innerHTML = '<span style="color: #ff4d4d;">⚠️ Please select a file.</span>';
+            return;
+        }
+
+        statusDiv.innerHTML = `<span style="color: var(--color-primary);">⏳ Starting secure upload for: ${file.name} (${(file.size / 1024).toFixed(2)} KB)...</span>`;
+
+        // Simulate the encryption and blockchain finalization process
+        setTimeout(() => {
+            statusDiv.innerHTML = `<span style="color: #66ff66;">✅ Step 1: Client-Side Encryption Complete.</span>`;
+        }, 1000);
+
+        setTimeout(() => {
+            statusDiv.innerHTML = `<span style="color: #66ff66;">✅ Step 2: Decentralized Sharding & Distribution Complete.</span>`;
+        }, 2500);
+        
+        setTimeout(() => {
+            const fakeHash = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+            statusDiv.innerHTML = `<span style="color: var(--color-primary);">🎉 Step 3: Blockchain Transaction Confirmed!</span><br>
+                                   <span style="font-size: 0.9rem; color: #99ccff;">Storage Hash: ${fakeHash.substring(0, 32)}...</span>`;
+            
+        }, 4000);
+    }
+</script>
+
+</html>
