@@ -3,5 +3,6 @@ authlib
 eth-account
 Flask-Cors
 werkzeug
+requests
 pytest
 mysql-connector-python

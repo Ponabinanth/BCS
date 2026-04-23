@@ -8,13 +8,11 @@ load_dotenv()
 
 def deploy():
     # 1. Configuration
-    # For local development (e.g., Ganache or Hardhat node)
-    rpc_url = os.getenv("RPC_URL", "http://127.0.0.1:8545")
+    # Docker Ganache
+    rpc_url = os.getenv("RPC_URL", "http://localhost:8545")
     private_key = os.getenv("PRIVATE_KEY") 
-    # If no private key in env, use a dummy one (ONLY FOR LOCAL TESTNETS)
     if not private_key:
-        print("WARNING: No PRIVATE_KEY found in simple deployment. Using a hardcoded test key (unsafe for prod).")
-        # Common Hardhat/Ganache test key 0
+        print("WARNING: Using Ganache account 0 private key (local testnet only)")
         private_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" 
 
     # 2. Compile Solidity

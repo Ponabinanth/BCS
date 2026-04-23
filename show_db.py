@@ -1,7 +1,7 @@
-import sqlite3
+import mysql.connector
+from mysql.connector import Error
 import pandas as pd
-
-# Connect to database
+# Connect to MySQL
 conn = sqlite3.connect('securechain.db')
 
 with open('db_dump.txt', 'w', encoding='utf-8') as f:

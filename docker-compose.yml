@@ -1,16 +1,36 @@
 version: '3.8'
 services:
-  mongo:
-    image: mongo:5.0
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-securechain}
+      MYSQL_USER: ${MYSQL_USER:-root}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-root}
     ports:
-      - "27017:27017"
+      - "3306:3306"
     volumes:
-      - mongo-data:/data/db
+      - mysql-data:/var/lib/mysql
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/test --quiet
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  ganache:
+    image: trufflesuite/ganache:latest
+    ports:
+      - "8545:8545"
+    command: >
+      ganache-cli
+      -p 8545
+      -h 0.0.0.0
+      --accounts 10
+      --defaultBalanceEther 100
+      --deterministic
+      --mnemonic "${GANACHE_MNEMONIC:-test test test test test test test test test test test junk}"
+    restart: unless-stopped
 
   backend:
     build: ./react-app/backend
@@ -18,11 +38,15 @@ services:
       - ./react-app/backend:/app
       - ./templates:/app/templates:ro
     environment:
-      - FLASK_PORT=5501
-      - MONGO_URI=mongodb://mongo:27017/securechain
-      - FLASK_SECRET_KEY=a-very-strong-and-long-secret-key-for-production
-      - GOOGLE_CLIENT_ID=your-google-client-id-from-env
-      - GOOGLE_CLIENT_SECRET=your-google-client-secret-from-env
+      - FLASK_PORT=${FLASK_PORT:-5501}
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=${MYSQL_PORT:-3306}
+      - MYSQL_USER=${MYSQL_USER:-root}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-root}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-securechain}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-change-this-secret}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-your-google-client-id}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-your-google-client-secret}
     ports:
       - "5501:5501"
     healthcheck:
@@ -31,8 +55,9 @@ services:
       timeout: 3s
       retries: 6
     depends_on:
-      mongo:
+      mysql:
         condition: service_healthy
 
 volumes:
+  mysql-data:
   mongo-data:

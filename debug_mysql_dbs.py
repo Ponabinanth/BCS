@@ -1,48 +1,45 @@
-import mysql.connector
 import os
+
+import mysql.connector
 from dotenv import load_dotenv
 
 load_dotenv()
 
-host = os.getenv('DB_HOST', 'localhost')
-user = os.getenv('DB_USER', 'root')
-password = os.getenv('DB_PASSWORD', '')
+host = os.getenv("MYSQL_HOST") or os.getenv("DB_HOST") or "localhost"
+port = int(os.getenv("MYSQL_PORT") or os.getenv("DB_PORT") or "3306")
+user = os.getenv("MYSQL_USER") or os.getenv("DB_USER") or "root"
+password = os.getenv("MYSQL_PASSWORD") or os.getenv("DB_PASSWORD") or ""
+target_db = os.getenv("MYSQL_DATABASE") or os.getenv("DB_NAME") or ""
 
-print(f"Connecting to MySQL Server ({host}) as '{user}'...")
+print(f"Connecting to MySQL server ({host}:{port}) as '{user}'...")
 
 try:
     # Connect without specifying database to list available ones
-    conn = mysql.connector.connect(
-        host=host,
-        user=user,
-        password=password
-    )
-    
-    if conn.is_connected():
-        print("✅ AUTHENTICATION SUCCESSFUL!")
-        
-        cursor = conn.cursor()
-        cursor.execute("SHOW DATABASES")
-        dbs = [db[0] for db in cursor]
-        print("\n📂 Available Databases:")
-        for db in dbs:
-            print(f" - {db}")
-            
-        target_db = os.getenv('DB_NAME', 'securechain_db')
-        print(f"\nTarget Database in .env: '{target_db}'")
-        
+    conn = mysql.connector.connect(host=host, port=port, user=user, password=password)
+
+    if not conn.is_connected():
+        print("FAILED: Connected but verification failed.")
+        raise SystemExit(1)
+
+    print("OK: Authentication successful.")
+
+    cursor = conn.cursor()
+    cursor.execute("SHOW DATABASES")
+    dbs = [db[0] for db in cursor]
+
+    print("\nAvailable databases:")
+    for db in dbs:
+        print(f" - {db}")
+
+    print(f"\nTarget database from env: '{target_db or '(not set)'}'")
+
+    if target_db:
         if target_db in dbs:
-            print(f"✅ Target database '{target_db}' exists!")
+            print(f"OK: Target database '{target_db}' exists.")
         else:
-            print(f"⚠️ Target database '{target_db}' NOT found.")
-            if 'blockchain_db' in dbs:
-                print("💡 Found 'blockchain_db'. Recommendation: Update .env DB_NAME=blockchain_db")
-            if 'BLOCKCHAIN' in dbs:
-                 print("💡 Found 'BLOCKCHAIN'. Recommendation: Update .env DB_NAME=BLOCKCHAIN")
+            print(f"WARNING: Target database '{target_db}' not found.")
 
-        conn.close()
-    else:
-        print("❌ Connected but verified failed.")
-
+    cursor.close()
+    conn.close()
 except mysql.connector.Error as err:
-    print(f"❌ CONNECTION FAILED: {err}")
+    print(f"FAILED: {err}")

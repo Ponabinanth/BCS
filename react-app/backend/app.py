@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 import json
 import os
 import sqlite3
+
 from flask_cors import CORS # pyright: ignore[reportMissingModuleSource]
 import random
 from datetime import datetime, timedelta
@@ -9,6 +10,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
 import webbrowser
 import time
+import re
+import platform
+import sys
+import subprocess
 
 # For wallet signature verification (optional imports)
 try:
@@ -24,13 +29,6 @@ import hmac
 import math
 from collections import Counter
 from werkzeug.utils import secure_filename
-
-# For MySQL (optional)
-try:
-    import mysql.connector # type: ignore
-except Exception as e:
-    mysql = None
-    print("Warning: mysql-connector-python not available - MySQL features will be disabled.", e)
 
 # For Google OAuth (optional)
 try:
@@ -120,75 +118,12 @@ SAMPLE_NFTS = [
 # In-memory storage for collected signatures
 collected = []
 
-def create_tables():
-    """Create necessary MySQL tables if they don't exist."""
-    if mysql_cursor is not None:
-        mysql_cursor.execute("""
-            CREATE TABLE IF NOT EXISTS devices (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                type VARCHAR(50) DEFAULT 'iot',
-                status VARCHAR(50) DEFAULT 'online',
-                registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        mysql_cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                username VARCHAR(255),
-                password VARCHAR(255) NOT NULL,
-                verified BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        mysql_conn.commit()
-        print("MySQL tables created.")
-
-def populate_devices():
-    """Populate MySQL devices table with data from devices.json if empty."""
-    if mysql_cursor is not None:
-        mysql_cursor.execute("SELECT COUNT(*) as count FROM devices")
-        result = mysql_cursor.fetchone()
-        if result['count'] == 0:
-            if os.path.exists('devices.json'):
-                with open('devices.json', 'r') as f:
-                    devices = json.load(f)
-                for device in devices:
-                    mysql_cursor.execute("""
-                        INSERT INTO devices (name, type, status, registered_at)
-                        VALUES (%s, %s, %s, %s)
-                    """, (device.get('name'), device.get('type', 'iot'), device.get('status', 'online'), device.get('registered_at', datetime.now().isoformat())))
-                mysql_conn.commit()
-                print("Devices populated from devices.json")
-
-# MySQL setup (optional)
-mysql_conn = None
-mysql_cursor = None
-if mysql is not None:
-    try:
-        mysql_conn = mysql.connector.connect(
-            host=os.environ.get('MYSQL_HOST', 'localhost'),
-            user=os.environ.get('MYSQL_USER', 'root'),
-            password=os.environ.get('MYSQL_PASSWORD', ''),
-            database=os.environ.get('MYSQL_DB', 'securechain')
-        )
-        mysql_cursor = mysql_conn.cursor(dictionary=True)
-        print("MySQL connected successfully.")
-        create_tables()
-        populate_devices()
-    except Exception as e:
-        print(f"Warning: MySQL connection failed - {e}. Using JSON fallback.")
-        mysql_conn = None
-        mysql_cursor = None
-
 DB_PATH = os.environ.get('FLASK_DB_PATH', os.path.join(BASE_DIR, 'securechain_backend.db'))
 users_collection = None  # Backward compatibility for older branches that referenced Mongo.
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 def init_sqlite_db():
@@ -483,6 +418,20 @@ def serve_style_css():
 @app.route('/features.css')
 def serve_features_css():
     return send_from_directory(STATIC_DIR, 'features.css')
+
+@app.route('/futuristic.css')
+def serve_futuristic_css():
+    """Neon overlay stylesheet (imported by /style.css)."""
+    # Prefer repo-root static/css if present (works with both repo-root and react-app static layouts).
+    candidates = [
+        os.path.join(STATIC_DIR, 'static', 'css'),
+        os.path.abspath(os.path.join(BASE_DIR, '..', '..', 'static', 'css')),
+        os.path.abspath(os.path.join(BASE_DIR, '..', 'static', 'css')),
+    ]
+    css_dir = next((p for p in candidates if os.path.exists(os.path.join(p, 'futuristic.css'))), None)
+    if not css_dir:
+        return jsonify({'error': 'futuristic.css not found'}), 404
+    return send_from_directory(css_dir, 'futuristic.css')
 
 # Serve JS files
 @app.route('/main.js')
@@ -1096,63 +1045,32 @@ def get_devices_advanced():
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    """Handle chatbot messages and return responses"""
-    try:
-        data = request.json
-        message = data.get('message', '').strip().lower()
-        response = ""
+    """Super chatbot with a small knowledge base + regex intents."""
+    data = request.get_json(silent=True) or {}
+    message_raw = str(data.get('message') or '').strip()
+    message = message_raw.lower()
 
-        if not message:
-            response = "Hello! I'm the SecureChain Assistant. How can I help you today? Ask about our features like AI, IoT, or NFT."
-        elif 'hello' in message or 'hi' in message or 'hey' in message:
-            response = "Hello! I'm the SecureChain Assistant. How can I help you today? Ask about our features like AI, IoT, or NFT."
-        elif 'list' in message and 'feature' in message or 'all' in message and 'feature' in message:
-            response = "SecureChain offers: AI Threat Detection (ML-based real-time analysis), IoT Device Management (secure registration and monitoring), NFT Verification (blockchain-based authenticity), Cybersecurity Tools (threat scanning and mapping), Analytics Dashboard (insights and reports), Wallet Integration (secure blockchain connections). Which feature would you like to know more about?"
-        elif 'ai' in message or 'threat' in message:
-            response = "AI Threat Detection uses machine learning algorithms to analyze network traffic, user behavior, and logs for anomalies. It predicts and neutralizes threats proactively, integrating with analytics for detailed reports."
-        elif 'iot' in message or 'device' in message:
-            response = "IoT Device Management allows secure registration of devices, monitors their status, and ensures encrypted communication. It prevents unauthorized access and provides real-time alerts."
-        elif 'nft' in message or 'verification' in message:
-            response = "NFT Verification confirms the authenticity and ownership of non-fungible tokens using blockchain technology. It checks signatures and metadata for fraud prevention."
-        elif 'cyber' in message or 'security' in message or 'threat scan' in message:
-            response = "Cybersecurity Tools include threat scanning, mapping global threats, and automated incident response. It uses AI for behavioral analysis and signature detection."
-        elif 'analytics' in message or 'dashboard' in message:
-            response = "Analytics Dashboard provides visualizations of device data, threats, and performance metrics. It helps in decision-making with real-time charts and reports."
-        elif 'wallet' in message or 'blockchain' in message:
-            response = "Wallet Integration enables secure connection to blockchain wallets, signature verification, and transaction management. It supports multiple providers with nonce-based security."
-        elif 'quantum' in message or 'encrypted' in message:
-            response = "Quantum Security uses advanced encryption for future-proofing against quantum threats. Encrypted Communications ensure all data is protected with end-to-end encryption."
-        elif 'threat scan' in message or 'scan threat' in message:
-            response = "Threat Scan uses AI-powered analysis to detect potential security threats in your system or network. It scans for malware, anomalies, and vulnerabilities, providing a detailed report with severity levels and recommendations for mitigation."
-        elif 'upload file' in message or 'upload' in message:
-            response = "Upload File allows you to securely submit files for analysis. The system checks for malware, viruses, and other threats using advanced scanning techniques, ensuring safe handling of your data."
-        elif 'register iot' in message or 'iot register' in message:
-            response = "Register IoT enables secure registration of Internet of Things devices. It assigns unique identifiers, verifies authenticity, and integrates devices into the trusted network for monitored communication."
-        elif 'verify nft' in message or 'nft verify' in message:
-            response = "Verify NFT confirms the authenticity and ownership of non-fungible tokens. It checks blockchain records, signatures, and metadata to prevent fraud and ensure the NFT's legitimacy."
-        elif 'view analytics' in message or 'analytics' in message:
-            response = "View Analytics provides comprehensive dashboards and reports on system performance, threats, and device metrics. It uses data visualization to help you understand trends and make informed security decisions."
-        elif 'connect wallet' in message or 'wallet connect' in message:
-            response = "Connect Wallet securely links your blockchain wallet for transactions and interactions. It verifies signatures, manages connections, and ensures encrypted communication with the network."
-        elif 'audit contract' in message or 'contract audit' in message:
-            response = "Audit Contract analyzes smart contracts for vulnerabilities, bugs, and security flaws. It uses automated tools to review code, identify risks, and suggest improvements for safer blockchain deployments."
-        elif 'scan url' in message or 'url scan' in message:
-            response = "Scan URL checks web addresses for phishing, malware, and other threats. It analyzes links in real-time, providing safety assessments and warnings to protect against malicious sites."
-        elif 'scan' in message:
-            # Simulate threat scan response
-            response = "Threat scan completed. Found 1 threat. Details: Potential malware signature detected"
-        elif 'help' in message:
-            response = "Commands: help, scan, wallet, block. Or ask about features like AI, IoT, NFT."
-        elif 'wallet' in message and 'connect' in message:
-            response = "Wallet connected successfully. Address verified."
-        elif 'block' in message:
-            response = "Block verified on the blockchain."
-        else:
-            response = "I'm sorry, I didn't understand. Try asking about AI, IoT, NFT, or say 'list all features'."
+    if not message:
+        return jsonify({'response': "Ask me about AI, IoT, NFT verification, wallet connect, threat scan, or type 'diagnose'."})
 
-        return jsonify({'response': response})
-    except Exception as e:
-        return jsonify({'response': 'An error occurred. Please try again.'}), 500
+    intents = [
+        (r'^(hello|hi|hey|yo)\\b', "Hello! I'm SecureChain Assistant. Ask: 'list features', 'threat scan', 'verify nft', 'connect wallet', or 'diagnose'."),
+        (r'(list|show).*(feature|capabilit)|all.*feature', "Features: AI Threat Detection, IoT Device Registry, NFT Verification, Cyber Threat Scan/Map, Analytics Dashboard, Wallet Signature Verification, Certificates."),
+        (r'(diagnose|self[- ]?diagnose|not working|fix my project|health)', "Try GET /api/self-diagnose (env/files/db/openssl) and GET /api/health (DB counts)."),
+        (r'(ai|ml|model|anomal|risk)', "AI endpoints: POST /api/risk/assess {asset_id} (risk score), GET /api/threat-map (live points), GET /api/analytics (recent events)."),
+        (r'(iot|device|register)', "IoT: GET/POST /api/devices and GET /api/devices/advanced. Register page: /registeriot.html."),
+        (r'(nft|verify|verification)', "NFT: use /verifynft.html and the API endpoints shown there; store verification events in analytics for auditing."),
+        (r'(wallet|metamask|connect|signature)', "Wallet: use /connectwallet.html. API: POST /api/wallet/nonce then POST /api/wallet/collect (verifies signature + nonce freshness)."),
+        (r'(threat|scan|ddos|phish|malware)', "Threats: use /threatscan.html. API: GET /api/threats and GET /api/threat-map (map points)."),
+        (r'(certificate|ssl)', "Certificates: use /certificate-generator.html or /certificate. Download: GET /api/download-certificate."),
+        (r'help', "Help: try 'list features', 'diagnose', 'threat scan', 'register iot', 'verify nft', 'connect wallet'."),
+    ]
+
+    for pattern, resp in intents:
+        if re.search(pattern, message):
+            return jsonify({'response': resp})
+
+    return jsonify({'response': "I didn't recognize that. Try 'help' or 'list features'."})
 
 @app.route('/api/wallet/collect', methods=['POST'])
 def wallet_collect():
@@ -1246,6 +1164,57 @@ def health():
         }), 200
     except Exception as e:
         return jsonify({"status": "error", "database": "disconnected", "error": str(e)}), 500
+
+@app.route('/api/self-diagnose', methods=['GET'])
+def self_diagnose():
+    """Self-diagnosis endpoint for local development."""
+    checks = {
+        "time": datetime.now().isoformat(),
+        "python": sys.version.split()[0],
+        "platform": platform.platform(),
+        "config": {
+            "PORT": app.config.get("PORT"),
+            "UPLOAD_FOLDER": app.config.get("UPLOAD_FOLDER"),
+            "STATIC_DIR": STATIC_DIR,
+            "TEMPLATES_DIR": TEMPLATES_DIR,
+            "DB_PATH": DB_PATH,
+        },
+        "files": {
+            "style.css": os.path.exists(os.path.join(STATIC_DIR, "style.css")),
+            "templates/index.html": os.path.exists(os.path.join(TEMPLATES_DIR, "index.html")),
+            "static/css/futuristic.css": os.path.exists(os.path.abspath(os.path.join(BASE_DIR, "..", "..", "static", "css", "futuristic.css"))),
+        },
+        "db": {"ok": False},
+        "openssl": {"ok": False},
+        "tips": [],
+    }
+
+    try:
+        with get_db_connection() as conn:
+            conn.execute("SELECT 1").fetchone()
+            tables = [r["name"] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").fetchall()]
+        checks["db"] = {"ok": True, "tables": tables}
+    except Exception as e:
+        checks["db"] = {"ok": False, "error": str(e)}
+
+    try:
+        res = subprocess.run(["openssl", "version"], capture_output=True, text=True, timeout=3, check=False)
+        checks["openssl"] = {
+            "ok": res.returncode == 0,
+            "version": (res.stdout or "").strip(),
+            "stderr": (res.stderr or "").strip(),
+        }
+    except Exception as e:
+        checks["openssl"] = {"ok": False, "error": str(e)}
+
+    if not checks["db"]["ok"]:
+        checks["tips"].append("SQLite DB failed. Delete/repair the DB at FLASK_DB_PATH or ensure the folder is writable.")
+    if not checks["openssl"]["ok"]:
+        checks["tips"].append("Install OpenSSL or add it to PATH to use /api/download-certificate.")
+    if not checks["files"]["static/css/futuristic.css"]:
+        checks["tips"].append("Missing static/css/futuristic.css. Re-pull the repo or recreate it under repo-root static/css/.")
+
+    return jsonify(checks)
 
 # ===== AUTH ROUTES =====
 @app.route('/api/signup', methods=['POST'])

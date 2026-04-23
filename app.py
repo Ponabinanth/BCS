@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, Response, send_file
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, Response, send_file, send_from_directory
 import mysql.connector
 from mysql.connector import Error
 import json
@@ -13,12 +13,16 @@ from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit
 import threading
 import time
+import re
+import platform
+import sys
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'default-dev-key')
+# Prefer FLASK_SECRET_KEY (documented), but keep backward compatibility.
+app.secret_key = os.getenv('FLASK_SECRET_KEY') or os.getenv('SECRET_KEY') or 'default-dev-key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Background thread for real-time simulations
@@ -38,21 +42,25 @@ def background_simulation():
         # Push to all clients
         try:
              socketio.emit('new_block', block_data)
-        except:
-             pass
+        except Exception as e:
+             log_error(f"SocketIO emit failed: {e}")
 
 # Start background thread
 bg_thread = threading.Thread(target=background_simulation, daemon=True)
 bg_thread.start()
 
 # MySQL Database Configuration
-MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
-MYSQL_PORT = int(os.getenv('MYSQL_PORT', '3306'))
-MYSQL_USER = os.getenv('MYSQL_USER', 'root')
-MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
-MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'securechain')
+# Prefer MYSQL_* env vars (documented in .env.example), but support legacy DB_* env vars too.
+MYSQL_HOST = os.getenv('MYSQL_HOST') or os.getenv('DB_HOST') or 'localhost'
+MYSQL_PORT = int(os.getenv('MYSQL_PORT') or os.getenv('DB_PORT') or '3306')
+MYSQL_USER = os.getenv('MYSQL_USER') or os.getenv('DB_USER') or 'root'
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD') or os.getenv('DB_PASSWORD') or ''
+MYSQL_DATABASE = os.getenv('MYSQL_DATABASE') or os.getenv('DB_NAME') or 'securechain'
 
 # Database connection helper
+def log_error(msg):
+    print(f"[ERROR] {datetime.datetime.now().isoformat()}: {msg}")
+
 def get_db_connection():
     try:
         conn = mysql.connector.connect(
@@ -64,7 +72,7 @@ def get_db_connection():
         )
         return conn
     except Error as e:
-        print(f"Error connecting to MySQL: {e}")
+        log_error(f"DB connection failed: {e}")
         return None
 
 def db_execute(cursor, query, params=None):
@@ -77,7 +85,7 @@ def db_execute(cursor, query, params=None):
 def init_db():
     conn = get_db_connection()
     if conn is None:
-        print("Failed to connect to SQLite database")
+        print("Failed to connect to MySQL database")
         return
     
     cursor = conn.cursor(dictionary=True)
@@ -190,6 +198,8 @@ def login_required(f):
 
 # CSS content as a string
 CSS_CONTENT = '''
+@import url("/futuristic.css");
+
 /* ===== Section Headings (Theme Color) ===== */
 
 .threatmap-heading,
@@ -835,6 +845,12 @@ def index():
 def serve_css():
     return Response(CSS_CONTENT, mimetype='text/css')
 
+@app.route('/futuristic.css')
+def serve_futuristic_css():
+    """Optional neon theme overlay (imported by /style.css)."""
+    css_dir = os.path.join(app.root_path, 'static', 'css')
+    return send_from_directory(css_dir, 'futuristic.css', mimetype='text/css')
+
 @app.route('/static/main.js')
 def serve_main_js():
     return send_file('main.js', mimetype='application/javascript')
@@ -1292,22 +1308,60 @@ def scan_threats():
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    """AI Chatbot endpoint"""
-    data = request.get_json()
-    message = data.get('message', '').lower()
+    """Super AI Chatbot - Answers ALL questions!"""
+    data = request.get_json(silent=True) or {}
+    message = str(data.get('message', '')).lower().strip()
+
+    if not message:
+        return jsonify({'response': "Ask me about blockchain, NFT verification, threat scans, IoT, certificates, or type 'diagnose'."})
     
-    # Simple response logic
-    responses = {
-        'hello': "Hello! I'm SecureChain AI Assistant. How can I help you with blockchain security today?",
-        'hi': "Hi there! I'm here to help you navigate SecureChain's security features.",
-        'help': "I can help you with: threat scanning, device registration, NFT verification, and general platform guidance.",
-        'features': "SecureChain offers: AI Threat Detection, IoT Trust Registrar, NFT Cert Validator, Quantum Encryption, and more!",
-        'services': "Our services include: Threat Scanning, Device Registration, NFT Verification, and Security Analytics."
+    # Regex Intent Matching KB
+    intents = {
+        r'(diagnose|self[- ]?diagnose|health|not working|fix my project)': (
+            "Run a quick check: GET /api/self-diagnose (shows DB connectivity, files, OpenSSL)."
+        ),
+        r'(ai|ml|model|anomaly)': (
+            "AI module: use POST /api/risk/assess {asset_id} for a simulated risk score; use GET /api/system/status for metrics."
+        ),
+        r'(blockchain|explorer|block|hash|address)': (
+            "Try POST /api/blockchain/explorer {query}. Use a height like '1001' or a '0x..' hash/address."
+        ),
+        r'hello|hi|hey': "Greetings Cyber Guardian! 🚀 Ask me about NFT deploy, threat scans, IoT register, error fixes, or cyber threats!",
+        r'help|features|what': """
+**SecureChain Assistant v2.0**
+• Threat Scan: POST /api/threats/scan
+• NFT Deploy: python deploy_contract.py
+• IoT: POST /api/devices
+• Fix Errors: Describe issue!
+• Wallet: connectwallet.html
+        """,
+        r'deploy|contract|nft|solidity': """
+**NFT Deploy:**
+1. docker-compose up ganache
+2. python deploy_contract.py
+3. ABI: contracts/SecureChainNFT.json
+Contract at localhost:8545
+        """,
+        r'wallet|metamask|connect': "Visit connectwallet.html → Click Connect → MetaMask → POST /api/wallet/connect",
+        r'iot|device|register': "POST /api/devices {device_id, name, type}. UI at registeriot.html",
+        r'threat|scan|cyber|ddos': "POST /api/threats/scan for live ports. Dashboardview.html live map!",
+        r'error|fix|bug|fail': """
+**Common Fixes:**
+- MySQL 1062: Unique dup, delete row
+- DB connect: docker-compose up mysql
+- Ganache: docker-compose up ganache
+- Run: docker-compose up --build
+Share full error!
+        """,
+        r'cert|certificate': "/api/generate-certificate + /api/download-certificate for SSL",
+        r'docker|run|start': "docker-compose up --build (includes Flask/MySQL/Ganache)",
     }
     
-    response = responses.get(message, "I'm still learning! For now, I can help explain our features and services. Try asking about 'threat scanning' or 'NFT verification'.")
+    for pattern, resp in intents.items():
+        if re.search(pattern, message):
+            return jsonify({'response': resp})
     
-    return jsonify({'response': response})
+    return jsonify({'response': 'Try \"deploy nft\", \"fix error\", \"threat scan\", or describe your issue! 🔧'})
 
 @app.route('/api/wallet/connect', methods=['POST'])
 @login_required
@@ -1564,6 +1618,78 @@ def download_certificate():
 @login_required
 def certificate_page():
     return render_template('certificate.html', logged_in=True, user_email=session.get('user'))
+
+# Basic health and self-diagnosis routes (helps local dev setup)
+@app.route('/api/health', methods=['GET'])
+def health():
+    return jsonify({'ok': True, 'service': 'securechain-flask', 'time': datetime.datetime.now().isoformat()})
+
+@app.route('/api/self-diagnose', methods=['GET'])
+def self_diagnose():
+    """Lightweight self-checks to help debug local dev setup."""
+    checks = {
+        'time': datetime.datetime.now().isoformat(),
+        'python': sys.version.split()[0],
+        'platform': platform.platform(),
+        'env': {
+            'FLASK_PORT': os.getenv('FLASK_PORT'),
+            'MYSQL_HOST': MYSQL_HOST,
+            'MYSQL_PORT': MYSQL_PORT,
+            'MYSQL_USER': MYSQL_USER,
+            'MYSQL_DATABASE': MYSQL_DATABASE,
+            'HAS_MYSQL_PASSWORD': bool(MYSQL_PASSWORD),
+            'HAS_SECRET_KEY': bool(os.getenv('FLASK_SECRET_KEY') or os.getenv('SECRET_KEY')),
+        },
+        'files': {
+            'templates/index.html': os.path.exists(os.path.join(app.root_path, 'templates', 'index.html')),
+            'main.js': os.path.exists(os.path.join(app.root_path, 'main.js')),
+            'contracts/': os.path.isdir(os.path.join(app.root_path, 'contracts')),
+            'static/css/futuristic.css': os.path.exists(os.path.join(app.root_path, 'static', 'css', 'futuristic.css')),
+        },
+        'db': {'ok': False},
+        'openssl': {'ok': False},
+        'tips': [],
+    }
+
+    # DB check
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            checks['db'] = {'ok': False, 'error': 'connect_failed'}
+        else:
+            cursor = conn.cursor()
+            cursor.execute('SELECT 1')
+            cursor.fetchone()
+            checks['db'] = {'ok': True}
+    except Exception as e:
+        checks['db'] = {'ok': False, 'error': str(e)}
+    finally:
+        try:
+            if cursor is not None:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            if conn is not None:
+                conn.close()
+        except Exception:
+            pass
+
+    # OpenSSL check (used by /api/download-certificate)
+    try:
+        res = subprocess.run(['openssl', 'version'], capture_output=True, text=True, timeout=3, check=False)
+        checks['openssl'] = {'ok': res.returncode == 0, 'version': (res.stdout or '').strip(), 'stderr': (res.stderr or '').strip()}
+    except Exception as e:
+        checks['openssl'] = {'ok': False, 'error': str(e)}
+
+    if not checks['db']['ok']:
+        checks['tips'].append('Start MySQL (or update MYSQL_* in .env) so init_db and /api/* endpoints can query tables.')
+    if not checks['openssl']['ok']:
+        checks['tips'].append('Install OpenSSL or add it to PATH to use /api/download-certificate.')
+
+    return jsonify(checks)
 
 # Error handlers
 @app.errorhandler(404)

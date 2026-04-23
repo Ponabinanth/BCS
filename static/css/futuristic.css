@@ -1,0 +1,121 @@
+/* Futuristic neon theme overlay (safe to @import). */
+:root{
+  --neo-bg: #070a12;
+  --neo-panel: rgba(15, 20, 40, 0.72);
+  --neo-text: #e9f2ff;
+  --neo-muted: rgba(233, 242, 255, 0.72);
+  --neo-cyan: #00e5ff;
+  --neo-purple: #b84dff;
+  --neo-pink: #ff3df2;
+  --neo-green: #2bff88;
+  --neo-red: #ff3d5a;
+  --neo-shadow: 0 10px 30px rgba(0,0,0,.45);
+  --neo-glow: 0 0 20px rgba(0,229,255,.25), 0 0 55px rgba(184,77,255,.12);
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important; transition:none !important;}
+}
+
+body{
+  background: radial-gradient(1200px 800px at 15% 10%, rgba(0,229,255,.10), transparent 55%),
+              radial-gradient(900px 700px at 85% 20%, rgba(184,77,255,.12), transparent 52%),
+              radial-gradient(900px 700px at 60% 85%, rgba(255,61,242,.08), transparent 56%),
+              linear-gradient(180deg, var(--neo-bg), #05060b 60%, #060814);
+  color: var(--neo-text);
+}
+
+/* Make common containers look like glass panels without breaking layouts. */
+.container,
+.card,
+.panel,
+.dashboard-card,
+.box,
+.section,
+.content,
+.main,
+.sidebar,
+.modal-content,
+.login-card{
+  background: var(--neo-panel);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0,229,255,.16);
+  box-shadow: var(--neo-shadow), var(--neo-glow);
+  border-radius: 14px;
+}
+
+/* Links/buttons: neon hover */
+a{ color: var(--neo-cyan); }
+a:hover{ text-shadow: 0 0 10px rgba(0,229,255,.35); }
+
+button,
+.btn,
+input[type="submit"]{
+  border: 1px solid rgba(0,229,255,.35);
+  background: linear-gradient(180deg, rgba(0,229,255,.12), rgba(184,77,255,.10));
+  color: var(--neo-text);
+  box-shadow: 0 0 0 0 rgba(0,229,255,.0);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+button:hover,
+.btn:hover,
+input[type="submit"]:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,61,242,.45);
+  box-shadow: 0 0 18px rgba(0,229,255,.18), 0 0 32px rgba(255,61,242,.10);
+}
+
+input, select, textarea{
+  background: rgba(10, 14, 30, .65);
+  color: var(--neo-text);
+  border: 1px solid rgba(0,229,255,.18);
+  outline: none;
+}
+input:focus, select:focus, textarea:focus{
+  border-color: rgba(0,229,255,.55);
+  box-shadow: 0 0 0 3px rgba(0,229,255,.10);
+}
+
+/* Neon headings */
+h1,h2,h3,.title,.heading,.logo-text{
+  color: var(--neo-text);
+  text-shadow: 0 0 18px rgba(0,229,255,.10), 0 0 28px rgba(184,77,255,.10);
+}
+
+/* Badges / severity labels */
+.badge,
+.pill,
+.tag{
+  border: 1px solid rgba(0,229,255,.25);
+  background: rgba(0,229,255,.08);
+  color: var(--neo-text);
+}
+.severity-high,.high{ border-color: rgba(255,61,90,.45) !important; box-shadow: 0 0 18px rgba(255,61,90,.18); }
+.severity-medium,.medium{ border-color: rgba(255,61,242,.35) !important; box-shadow: 0 0 18px rgba(255,61,242,.14); }
+.severity-low,.low{ border-color: rgba(43,255,136,.35) !important; box-shadow: 0 0 18px rgba(43,255,136,.12); }
+
+/* Subtle animated grid */
+body::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: .22;
+  background-image:
+    linear-gradient(rgba(0,229,255,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,77,255,.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(circle at 50% 20%, black 30%, transparent 70%);
+  animation: neo-pan 18s linear infinite;
+}
+@keyframes neo-pan{
+  0%{ transform: translate3d(0,0,0); }
+  100%{ transform: translate3d(-48px,-48px,0); }
+}
+
+/* Footer/help text */
+.muted, small, .helptext{
+  color: var(--neo-muted);
+}
+
